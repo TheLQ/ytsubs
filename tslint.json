@@ -1,0 +1,15 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint:recommended"
+    ],
+    "jsRules": {},
+    "rules": {
+        "no-console": false,
+        /* conflicts with Prettier code formatter */
+        "arrow-parens": false,
+        "trailing-comma": false
+        
+    },
+    "rulesDirectory": []
+}
