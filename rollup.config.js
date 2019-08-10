@@ -7,19 +7,6 @@ import sourcemaps from 'rollup-plugin-sourcemaps'
 import VuePlugin from 'rollup-plugin-vue'
 import commonjs from 'rollup-plugin-commonjs'
 
-const plugins = [
-    resolve(),
-    // Use officially recommended replace instead of this
-    // nodeGlobals(),
-    replace({
-        'process.env.NODE_ENV': JSON.stringify('development')
-    }),
-    commonjs(),
-    VuePlugin(),
-    sourcemaps(),
-    typescript(),
-]
-
 export default [{
     input: './src/web/index.ts',
     plugins: [
@@ -37,27 +24,30 @@ export default [{
     output: [
         {
             file: 'dist/js/index.js',
+            sourcemap: true,
             format: 'cjs'
         }
     ]
-}, {
-    input: './src/cli/index.ts',
-    plugins: [
-        resolve({
-            preferBuiltins: true
-        }),
-        commonjs(),
-        VuePlugin(),
-        sourcemaps(),
-        typescript(),
-    ],
-    external: [
-        'http'
-    ],
-    output: [
-        {
-            file: 'dist/js/cli.js',
-            format: 'cjs'
-        }
-    ]
-}]
+}
+// }, {
+//     input: './src/cli/index.ts',
+//     plugins: [
+//         resolve({
+//             preferBuiltins: true
+//         }),
+//         commonjs(),
+//         VuePlugin(),
+//         sourcemaps(),
+//         typescript(),
+//     ],
+//     external: [
+//         'http'
+//     ],
+//     output: [
+//         {
+//             file: 'dist/js/cli.js',
+//             format: 'cjs'
+//         }
+//     ]
+// }
+]
