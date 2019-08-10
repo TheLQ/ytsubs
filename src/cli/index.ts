@@ -41,6 +41,6 @@ DownloadUtils.getUrlMultiple(
     console.log("got it " + url);
   },
   () => {
-      console.log("done");
+    console.log("done");
   }
 );

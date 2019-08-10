@@ -1,21 +1,18 @@
 {
-    "compilerOptions": {
-        // this aligns with Vue's browser support
-        "target": "es5",
-        // this enables stricter inference for data properties on `this`
-        "strict": true,
-        // tree shaking
-        "module": "es2015",
-        "moduleResolution": "node",
+  "compilerOptions": {
+    // this aligns with Vue's browser support
+    "target": "es5",
+    // this enables stricter inference for data properties on `this`
+    "strict": true,
+    // tree shaking
+    "module": "es2015",
+    "moduleResolution": "node",
 
-        "outDir": "./dist/js",
-        "sourceMap": true,
-        "noImplicitAny": true,
+    "outDir": "./dist/js",
+    "sourceMap": true,
+    "noImplicitAny": true,
 
-        "esModuleInterop": true
-    },
-    "include": [
-        "./src/**/*",
-        "./src/**/*.vue",
-    ]
+    "esModuleInterop": true
+  },
+  "include": ["./src/**/*", "./src/**/*.vue"]
 }

@@ -16,10 +16,10 @@ function initView() {
   console.log("loading Vue");
   const app = new Vue({
     data: {
-      videos: [],
+      videos: []
     },
     el: "#app",
-    render: (h) => h(App),
+    render: h => h(App)
   });
 
   console.log("done loading Vue");
@@ -41,7 +41,7 @@ function initSubscriptions(vue: Vue) {
   const videos: IVideo[] = [];
 
   const feedUrls = Subscriptions.channels.map(
-    (channelId) => "/cache_feed/" + channelId + ".xml",
+    channelId => "/cache_feed/" + channelId + ".xml"
   );
 
   DownloadUtils.getUrlMultiple(
@@ -67,7 +67,7 @@ function initSubscriptions(vue: Vue) {
           publishedMoment,
           thumbnail: "https://i.ytimg.com/vi/" + videoId + "/mqdefault.jpg",
           title: XmlUtils.getElementText(media, "media:title"),
-          videoUrl: "https://www.youtube.com/watch?v=" + videoId,
+          videoUrl: "https://www.youtube.com/watch?v=" + videoId
         });
       }
     },
@@ -78,7 +78,7 @@ function initSubscriptions(vue: Vue) {
         // minus to go in descending order
         (left, right) => -left.publishedMoment.diff(right.publishedMoment),
         0,
-        videos.length,
+        videos.length
       );
 
       // don't make a gigantic list that crashes the browser
@@ -91,6 +91,6 @@ function initSubscriptions(vue: Vue) {
       for (const video of videos) {
         vue.$data.videos.push(video);
       }
-    },
+    }
   );
 }

@@ -18,7 +18,7 @@ export function getUrlMultiple(
   concurrentDownloads: number,
   urls: string[],
   urlCallback: GetUrlCallback,
-  doneCallback: () => void,
+  doneCallback: () => void
 ): void {
   // urls must be unique or else it breaks further counting
   const uniqueSet = new Set(urls);
@@ -32,10 +32,7 @@ export function getUrlMultiple(
   const remainingUrls = [...urls];
 
   for (let i = 0; i <= concurrentDownloads; i++) {
-    const fetcherCallback: GetUrlCallback = (
-      fetchedUrl,
-      fetchedBody,
-    ) => {
+    const fetcherCallback: GetUrlCallback = (fetchedUrl, fetchedBody) => {
       try {
         urlCallback(fetchedUrl, fetchedBody);
       } catch (error) {
@@ -44,7 +41,9 @@ export function getUrlMultiple(
       }
 
       const nextUrl: string | undefined = remainingUrls.pop();
-      console.log("parsedUrls " + parsedUrls.length + " channels " + urlsOrigLength);
+      console.log(
+        "parsedUrls " + parsedUrls.length + " channels " + urlsOrigLength
+      );
       parsedUrls.push(fetchedUrl);
       if (nextUrl === undefined) {
         if (parsedUrls.length === urlsOrigLength) {

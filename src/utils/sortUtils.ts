@@ -13,7 +13,7 @@ function dualPivotQuicksort<T>(
   comp: QuicksortComparator<T>,
   left: number,
   right: number,
-  div: number,
+  div: number
 ): T[] {
   const len = right - left;
   let i;
@@ -92,20 +92,19 @@ export function sort<T>(
   array: T[],
   comparison: QuicksortComparator<T>,
   fromIndex: number,
-  toIndex: number,
+  toIndex: number
 ) {
   // not astral-plane safe
   const len = array.length || 0;
   let fromIdx =
-      typeof fromIndex === "symbol" ||
-      toString.call(fromIndex) === "[object Symbol]"
-        ? 0
-        : Math.min(fromIndex || 0, len) || 0;
+    typeof fromIndex === "symbol" ||
+    toString.call(fromIndex) === "[object Symbol]"
+      ? 0
+      : Math.min(fromIndex || 0, len) || 0;
   let toIdx =
-      typeof toIndex === "symbol" ||
-      toString.call(toIndex) === "[object Symbol]"
-        ? 0
-        : Math.min(toIndex || len, len);
+    typeof toIndex === "symbol" || toString.call(toIndex) === "[object Symbol]"
+      ? 0
+      : Math.min(toIndex || len, len);
   if (toIdx !== toIdx) {
     // check against NaN
     toIdx = len;
