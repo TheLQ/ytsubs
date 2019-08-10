@@ -36,7 +36,7 @@ export default [{
     ],
     output: [
         {
-            file: 'dist/index.js',
+            file: 'dist/js/index.js',
             format: 'cjs'
         }
     ]
@@ -56,7 +56,7 @@ export default [{
     ],
     output: [
         {
-            file: 'dist/cli.js',
+            file: 'dist/js/cli.js',
             format: 'cjs'
         }
     ]
