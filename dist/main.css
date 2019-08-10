@@ -1,12 +1,10 @@
 .video-container {
+    display: flex;
     flex-wrap: wrap;
 }
 
 .videoBox {
-    display: inline-block;
     margin: 5px;
     border: 1px solid;
-    /* overflow-wrap: break-word; */
-    overflow: hidden;
     width: 320px;
 }
