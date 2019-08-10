@@ -26,7 +26,7 @@ function initView() {
   return app;
 }
 
-interface IVideo {
+export interface IVideo {
   id: string;
   title: string;
   thumbnail: string;

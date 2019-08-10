@@ -11,14 +11,14 @@
 
 <script lang="ts">
 import Vue, { VueConstructor } from 'vue'
-import { Video } from '../index'
+import { IVideo } from '../index'
 
 export default Vue.extend<
     {},
     {},
     {},
     {
-        videoItem: Video 
+        videoItem: IVideo
     }
 >({
     props: {
