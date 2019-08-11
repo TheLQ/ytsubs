@@ -1,4 +1,4 @@
-import parseXml from "@rgrove/parse-xml";
+import parseXml, { Element, NodeBase } from "@rgrove/parse-xml";
 
 // export function parseChildren(children: any) {
 //   const newChildren = [...children];
@@ -13,11 +13,11 @@ import parseXml from "@rgrove/parse-xml";
 
 export function loadXml(xmlString: string) {
   const doc = parseXml(xmlString);
-  // console.log("raw", doc)
+  console.log("raw");
 
   // empty text nodes
   // challenge: stack so no recursion
-  const stack = [doc];
+  const stack: Element[] = [doc.children[0] as Element];
   let index = 0;
   while (stack.length !== 0) {
     if (stack.length > 50) {
@@ -43,7 +43,7 @@ export function loadXml(xmlString: string) {
     switch (child.type) {
       case "element":
         index = 0;
-        stack.push(child);
+        stack.push(child as Element);
         break;
       case "text":
         const childNode = child as parseXml.Text;
