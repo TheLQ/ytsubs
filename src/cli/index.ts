@@ -1,46 +1,44 @@
-// import * as utils from '../utils'
-// import * as fs from 'fs'
+import nanoexpress from "nanoexpress";
+import { resolve } from "path";
+import { Storage } from "./storage";
 
-// fs.readFile(
-//     '/big10/projects/ytsubs/cache_feed/UC0iDKgdHXQNmh2cuvEUZhDw.xml',
-//     /*return string instead of buffer*/"utf8",
-//     function processClientSecrets(err, content) {
-//         utils.loadXml(content);
-//     }
-// )
+async function startApp() {
+  const storage = await Storage.create("./client/database.sqlite");
 
-import http from "http";
-import * as DownloadUtils from "../utils/downloadUtils";
-import * as Subscriptions from "../web/subscriptions";
-
-const feedUrls = Subscriptions.channels.map(
-  channelId => "http://127.0.0.1:8080/cache_feed/" + channelId + ".xml"
-);
-
-function getUrlNode(url: string, callback: DownloadUtils.GetUrlCallback) {
-  http
-    .get(url, res => {
-      let body = "";
-      res.on("data", chunk => {
-        body += chunk;
-      });
-      res.on("end", () => {
-        callback(url, body);
-      });
-    })
-    .on("error", e => {
-      throw e;
-    });
+  startWeb(storage);
 }
 
-DownloadUtils.getUrlMultiple(
-  getUrlNode,
-  5,
-  feedUrls,
-  (url, body) => {
-    console.log("got it " + url);
-  },
-  () => {
-    console.log("done");
-  }
-);
+function startWeb(storage: Storage) {
+  const app = nanoexpress();
+
+  // error handlers
+
+  app.setErrorHandler((err, req, res) => {
+    console.log("error handler");
+    res.end(err.message);
+    return res;
+  });
+
+  app.setNotFoundHandler((res, req) => {
+    console.log("notfound error");
+    res.end("you accessing to missing route??");
+    return res;
+  });
+
+  app.setValidationErrorHandler((errors, req, res) => {
+    console.log("validation error");
+    res.end("validation errors, " + JSON.stringify(errors));
+  });
+
+  // routes
+
+  app.static("/", resolve("dist"));
+
+  app.get("/videos", (req, res) => {
+    return storage.getVideos();
+  });
+
+  // done
+
+  app.listen(8080);
+}
