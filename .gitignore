@@ -4,3 +4,4 @@ client_secret.json
 test.js
 
 dist/js
+dist/jscli

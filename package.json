@@ -5,13 +5,19 @@
   "main": "index.js",
   "dependencies": {
     "@rgrove/parse-xml": "^2.0.1",
-    "google-auth-library": "^5.1.1",
+    "cookie": "^0.4.0",
+    "fast-json-stringify": "^1.15.4",
+    "google-auth-library": "^5.2.0",
     "googleapis": "^42.0.0",
+    "googleapis-common": "^3.0.0",
     "moment": "^2.24.0",
+    "nanoexpress": "^0.12.16",
+    "sqlite": "^3.0.3",
     "vue": "^2.6.10"
   },
   "devDependencies": {
     "@types/rgrove__parse-xml": "^1.1.0",
+    "esm": "^3.2.25",
     "fast-xml-parser": "^3.12.19",
     "http-server": "^0.11.1",
     "husky": "^3.0.3",
@@ -19,6 +25,8 @@
     "pretty-quick": "^1.11.1",
     "rollup": "^1.19.2",
     "rollup-plugin-commonjs": "^10.0.2",
+    "rollup-plugin-json": "^4.0.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-replace": "^2.2.0",
@@ -31,7 +39,9 @@
     "vue-template-compiler": "^2.6.10"
   },
   "scripts": {
-    "format": "prettier --write 'src/**/*.{ts,vue}' dist/index.html dist/main.css package.json rollup.config.js tsconfig.json tslint.json"
+    "compile": "rollup -c",
+    "format": "prettier --write 'src/**/*.{ts,vue}' dist/index.html dist/main.css package.json rollup.config.js tsconfig.json tslint.json",
+    "run": "node -r esm dist/jscli/cli/index.js"
   },
   "husky": {
     "hooks": {

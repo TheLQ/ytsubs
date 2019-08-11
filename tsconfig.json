@@ -1,14 +1,14 @@
 {
   "compilerOptions": {
     // this aligns with Vue's browser support
-    "target": "es5",
+    "target": "es2018",
     // this enables stricter inference for data properties on `this`
     "strict": true,
     // tree shaking
-    "module": "es2015",
+    "module": "es6",
     "moduleResolution": "node",
 
-    "outDir": "./dist/js",
+    "outDir": "./dist/jscli",
     "sourceMap": true,
     "noImplicitAny": true,
 

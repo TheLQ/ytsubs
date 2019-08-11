@@ -6,6 +6,9 @@ import replace from "rollup-plugin-replace";
 import sourcemaps from "rollup-plugin-sourcemaps";
 import VuePlugin from "rollup-plugin-vue";
 import commonjs from "rollup-plugin-commonjs";
+import json from "rollup-plugin-json";
+import nodeBuiltins from "rollup-plugin-node-builtins";
+import globals from "rollup-plugin-node-globals";
 
 export default [
   {
@@ -26,29 +29,49 @@ export default [
       {
         file: "dist/js/index.js",
         sourcemap: true,
-        format: "cjs"
+        format: "umd",
+        name: "ytsubs"
       }
     ]
   }
-  // }, {
-  //     input: './src/cli/index.ts',
-  //     plugins: [
-  //         resolve({
-  //             preferBuiltins: true
-  //         }),
-  //         commonjs(),
-  //         VuePlugin(),
-  //         sourcemaps(),
-  //         typescript(),
-  //     ],
-  //     external: [
-  //         'http'
-  //     ],
-  //     output: [
-  //         {
-  //             file: 'dist/js/cli.js',
-  //             format: 'cjs'
-  //         }
-  //     ]
-  // }
+  /*
+  this doesn't work because of some default export errors
+  instead use tsc to save to dist/jscli and run with node command
+
+  {
+    input: "./src/cli/index.ts",
+    plugins: [
+      json(),
+      globals(),
+      nodeBuiltins(),
+      resolve(),
+      // replace({
+      //   delimiters: ['', ''],
+      //   values: {
+      //     "require('readable-stream/transform')": "require('stream').Transform",
+      //     'require("readable-stream/transform")': "require('stream').Transform",
+      //     "require('readable-stream/duplex')": "require('stream').Duplex",
+      //     'require("readable-stream/duplex")': "require('stream').Duplex",
+      //     "require('readable-stream/writable')": "require('stream').Writable",
+      //     'require("readable-stream/writable")': "require('stream').Writable",
+      //     'readable-stream': 'stream',
+      //     'if(process.argv[1] && process.argv[1].match(__filename))': 'if(false)'
+      //   }
+      // }),
+      commonjs(),
+      // VuePlugin(),
+      sourcemaps(),
+      
+      typescript()
+    ],
+    external: ["http"],
+    output: [
+      {
+        file: "dist/js/cli.js",
+        format: "cjs",
+        sourcemap: true
+      }
+    ]
+  }
+  */
 ];
