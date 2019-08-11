@@ -1,7 +1,8 @@
 node_modules/
 cache_feed/
-client_secret.json
 test.js
 
 dist/js
 dist/jscli
+
+client/
