@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "@rgrove/parse-xml": "^2.0.1",
+    "@types/gapi": "0.0.39",
     "cookie": "^0.4.0",
     "fast-json-stringify": "^1.15.4",
     "google-auth-library": "^5.2.0",
@@ -16,6 +17,7 @@
     "vue": "^2.6.10"
   },
   "devDependencies": {
+    "@types/gapi.auth2": "0.0.50",
     "@types/rgrove__parse-xml": "^1.1.0",
     "esm": "^3.2.25",
     "fast-xml-parser": "^3.12.19",
@@ -40,8 +42,10 @@
   },
   "scripts": {
     "compile": "rollup -c",
+    "compilewatch": "rollup -c -w",
     "format": "prettier --write 'src/**/*.{ts,vue}' dist/index.html dist/main.css package.json rollup.config.js tsconfig.json tslint.json",
-    "run": "node -r esm dist/jscli/cli/index.js"
+    "run": "node -r esm dist/jscli/cli/index.js",
+    "http": "http-server -p 8080"
   },
   "husky": {
     "hooks": {

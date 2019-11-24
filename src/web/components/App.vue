@@ -1,12 +1,15 @@
 <template>
-  <div class="video-container">
-    <Video v-for="video in videos" :key="video.id" :videoItem="video" />
+  <div class="app">
+    <Youtube />
+    <Videos />
   </div>
 </template>
 
 <script lang="ts">
 import Vue, { VueConstructor } from "vue";
 import Video from "./Video.vue";
+import Youtube from "./Youtube.vue";
+import { IVueData } from "../vue";
 
 export default Vue.extend<
   {
@@ -17,13 +20,13 @@ export default Vue.extend<
   {}
 >({
   components: {
-    Video
+    Video,
+    Youtube
   },
   data: function() {
-    const data = this.$root.$data.videos;
-    console.log("videos", data);
+    const vueData = this.$root.$data as IVueData;
     return {
-      videos: data
+      videos: vueData.videos
     };
   }
 });

@@ -1,0 +1,41 @@
+<button onclick="authenticate().then(loadClient)">authorize and load</button>
+<button onclick="execute()">execute</button>
+
+<script src="https://apis.google.com/js/api.js"></script>
+<script>
+  function init() {
+    // const app = initView();
+    // initSubscriptions(app);
+    gapi.load("client:auth2", initYoutube);
+  }
+  window.addEventListener("load", init);
+
+  const SCOPE = "https://www.googleapis.com/auth/youtube.force-ssl";
+
+  async function initYoutube() {
+    try {
+      console.log("login");
+      await gapi.auth2.getAuthInstance().signIn({ scope: SCOPE });
+    } catch (error) {
+      console.error("failed to login", error);
+      return;
+    }
+
+    // must not throw errors in this function because gapi doesn't log them!
+    try {
+      console.log("initClient");
+      await gapi.client.init({
+        apiKey: "3i3ER927GXc74glWm4zyXXtc",
+        clientId:
+          "816720081291-3nbo9llrvja6fia9n8c4qgl8sqbvif13.apps.googleusercontent.com",
+        discoveryDocs: [
+          "https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest"
+        ],
+        scope: SCOPE
+      });
+    } catch (error) {
+      console.error("failed to init gapi", error);
+      return;
+    }
+  }
+</script>

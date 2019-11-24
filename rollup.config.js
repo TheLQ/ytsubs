@@ -8,29 +8,29 @@ import VuePlugin from "rollup-plugin-vue";
 import commonjs from "rollup-plugin-commonjs";
 import json from "rollup-plugin-json";
 import nodeBuiltins from "rollup-plugin-node-builtins";
-import globals from "rollup-plugin-node-globals";
+// import globals from "rollup-plugin-node-globals";
 
 export default [
   {
     input: "./src/web/index.ts",
     plugins: [
-      resolve(),
+      json(),
       // Use officially recommended replace instead of this
-      // nodeGlobals(),
+      // nodeBuiltins(),
+      resolve(),
       replace({
         "process.env.NODE_ENV": JSON.stringify("development")
       }),
       commonjs(),
       VuePlugin(),
-      sourcemaps(),
+      // sourcemaps(),
       typescript()
     ],
     output: [
       {
         file: "dist/js/index.js",
         sourcemap: true,
-        format: "umd",
-        name: "ytsubs"
+        format: "cjs"
       }
     ]
   }
