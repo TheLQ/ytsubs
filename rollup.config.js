@@ -8,7 +8,8 @@ import VuePlugin from "rollup-plugin-vue";
 import commonjs from "rollup-plugin-commonjs";
 import json from "rollup-plugin-json";
 import nodeBuiltins from "rollup-plugin-node-builtins";
-// import globals from "rollup-plugin-node-globals";
+import globals from "rollup-plugin-node-globals";
+import builtins from "builtin-modules";
 
 export default [
   {
@@ -35,43 +36,54 @@ export default [
     ]
   }
   /*
-  this doesn't work because of some default export errors
-  instead use tsc to save to dist/jscli and run with node command
+  this doesn't work because of 
+  (early 2019) some default export errors
+  (late 2019) https://github.com/nodejs/readable-stream/issues/348
 
-  {
-    input: "./src/cli/index.ts",
-    plugins: [
-      json(),
-      globals(),
-      nodeBuiltins(),
-      resolve(),
-      // replace({
-      //   delimiters: ['', ''],
-      //   values: {
-      //     "require('readable-stream/transform')": "require('stream').Transform",
-      //     'require("readable-stream/transform")': "require('stream').Transform",
-      //     "require('readable-stream/duplex')": "require('stream').Duplex",
-      //     'require("readable-stream/duplex")': "require('stream').Duplex",
-      //     "require('readable-stream/writable')": "require('stream').Writable",
-      //     'require("readable-stream/writable")': "require('stream').Writable",
-      //     'readable-stream': 'stream',
-      //     'if(process.argv[1] && process.argv[1].match(__filename))': 'if(false)'
-      //   }
-      // }),
-      commonjs(),
-      // VuePlugin(),
-      sourcemaps(),
-      
-      typescript()
-    ],
-    external: ["http"],
-    output: [
-      {
-        file: "dist/js/cli.js",
-        format: "cjs",
-        sourcemap: true
-      }
-    ]
-  }
+  instead use tsc to save to dist/jscli and run with node command
   */
+
+  // {
+  //   input: "./src/cli/index.ts",
+  //   plugins: [
+
+  //     json(),
+  //     // globals(),
+  //     // nodeBuiltins(),
+  //     resolve({
+  //       preferBuiltins: true
+  //     }),
+  //     commonjs({
+  //       inclulde: 'node_modules/**',
+  //       namedExports: {
+  //         'node_modules/graphql/index.mjs': ['graphql']
+  //       }
+  //     }),
+  //     // replace({
+  //     //   delimiters: ['', ''],
+  //     //   values: {
+  //     //     "require('readable-stream/transform')": "require('stream').Transform",
+  //     //     'require("readable-stream/transform")': "require('stream').Transform",
+  //     //     "require('readable-stream/duplex')": "require('stream').Duplex",
+  //     //     'require("readable-stream/duplex")': "require('stream').Duplex",
+  //     //     "require('readable-stream/writable')": "require('stream').Writable",
+  //     //     'require("readable-stream/writable")': "require('stream').Writable",
+  //     //     'readable-stream': 'stream',
+  //     //     'if(process.argv[1] && process.argv[1].match(__filename))': 'if(false)'
+  //     //   }
+  //     // }),
+  //     // VuePlugin(),
+  //     // sourcemaps(),
+
+  //     typescript()
+  //   ],
+  //   // external: builtins,
+  //   output: [
+  //     {
+  //       file: "dist/js/cli.mjs",
+  //       format: "esm",
+  //       sourcemap: true
+  //     }
+  //   ]
+  // }
 ];

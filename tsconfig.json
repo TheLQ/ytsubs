@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
     // this aligns with Vue's browser support
-    "target": "es2018",
+    "target": "es2020",
+    "module": "esnext",
+
     // this enables stricter inference for data properties on `this`
     "strict": true,
-    // tree shaking
-    "module": "es6",
+
     "moduleResolution": "node",
 
     "outDir": "./dist/jscli",
@@ -14,5 +15,6 @@
 
     "esModuleInterop": true
   },
-  "include": ["./src/**/*", "./src/**/*.vue"]
+  // "include": ["./src/**/*", "./src/**/*.vue"]
+  "include": ["src"]
 }

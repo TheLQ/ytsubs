@@ -2,7 +2,9 @@ node_modules/
 cache_feed/
 test.js
 
-dist/js
-dist/jscli
+dist/**/*.js
+dist/**/*.js.map
+dist/**/*.cjs
+dist/**/*.cjs.map
 
 client/
