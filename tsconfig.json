@@ -9,7 +9,7 @@
 
     "moduleResolution": "node",
 
-    "outDir": "./dist/jscli",
+    "outDir": "./dist",
     "sourceMap": true,
     "noImplicitAny": true,
 
