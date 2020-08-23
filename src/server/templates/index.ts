@@ -7,7 +7,7 @@ import Path from "path";
 import { exec } from "child_process";
 import fs from "fs";
 import process from "process";
-import { fatalError } from "../util/error";
+import { fatalError, WrappedError } from "../util/error";
 import { promiseAllThrow } from "../util/apputil";
 
 const log = logger("server/templates");
@@ -34,74 +34,20 @@ Handlebars.registerHelper("ifequals", function(
   return options.inverse(this);
 });
 
-function loadPartials(templateSource: any): void {
-  // Load all partial templates
-  for (const template of Object.keys(templateSource)) {
-    if (template.startsWith("partial")) {
-      // Strip extension
-      const name = template.substr(0, template.indexOf("."));
-      Handlebars.registerPartial(name, templateSource[template]);
-      log.silly(`loaded partial ${name}`);
-    }
-  }
-}
-
-function initPartials(): void {
-  loadCachedTemplate("partialBodyStart");
-  loadCachedTemplate("partialHead", () => loadPartials(cachedTemplates));
-}
-
-const cachedTemplates: {
-  [name: string]: HandlebarsTemplateDelegate;
-} = {};
-if (PROD) {
-  loadPartials(Handlebars.templates);
-} else {
-  initPartials();
-}
-
-export interface Lazy<T> {
-  actual: null | T;
-  get: HandlebarsTemplateDelegate;
-}
-
-export function loadTemplate(name: string): Lazy<HandlebarsTemplateDelegate> {
-  let lazy: Lazy<HandlebarsTemplateDelegate>;
+export async function init() {
   if (PROD) {
-    lazy = {
-      actual: null,
-      get get(): HandlebarsTemplateDelegate {
-        return Handlebars.templates[`${name}.hbs`];
-      }
-    };
+    loadPartials();
   } else {
-    lazy = {
-      actual: null,
-      get get(): HandlebarsTemplateDelegate {
-        return cachedTemplates[`${name}.hbs`];
-      }
-    };
+    await promiseAllThrow(
+      [
+        loadCachedTemplate("partialBodyStart"),
+        loadCachedTemplate("partialHead")
+      ],
+      "Failed to load partials"
+    );
 
-    loadCachedTemplate(name);
+    loadPartials();
   }
-
-  return lazy;
-}
-
-async function loadCachedTemplate(
-  name: string,
-  cb?: () => void
-): Promise<void> {
-  const path = Path.join("src", "server", "templates", `${name}.hbs`);
-
-  return fs.promises
-    .readFile(path)
-    .then((val: Buffer) => {
-      cachedTemplates[`${name}.hbs`] = Handlebars.compile(val.toString());
-      log.silly(`loaded template ${path}`);
-    })
-    .then(cb)
-    .catch(err => fatalError(err, `cannot load template ${path}`));
 }
 
 export async function reload(): Promise<void> {
@@ -109,11 +55,49 @@ export async function reload(): Promise<void> {
     throw new Error("Cannot reload prod");
   }
 
-  const promises = [];
-  for (const template of Object.keys(cachedTemplates)) {
-    const name = template.substr(0, template.indexOf("."));
-    promises.push(loadCachedTemplate(name));
-  }
+  const promises = Object.keys(Handlebars.templates).map(template =>
+    loadCachedTemplate(template, false)
+  );
   await promiseAllThrow(promises, "Unable to reload templates");
-  initPartials();
+
+  // partials may of changed
+  loadPartials();
+}
+
+function loadPartials(): void {
+  // Load all partial templates
+  for (const template of Object.keys(Handlebars.templates)) {
+    if (template.startsWith("partial")) {
+      // Strip extension
+      const name = template.substr(0, template.indexOf("."));
+      Handlebars.registerPartial(name, Handlebars.templates[template]);
+      log.silly(`loaded partial ${name}`);
+    }
+  }
+}
+
+async function loadCachedTemplate(
+  name: string,
+  addExtension = true
+): Promise<void> {
+  const filename = addExtension ? `${name}.hbs` : name;
+  const path = Path.join("src", "server", "templates", filename);
+
+  try {
+    const content = await fs.promises.readFile(path);
+    Handlebars.templates[filename] = Handlebars.compile(content.toString());
+    log.silly(`loaded template ${path}`);
+  } catch (e) {
+    throw new WrappedError(`cannot load template ${path}`, e);
+  }
+}
+
+export async function loadTemplate(
+  name: string
+): Promise<HandlebarsTemplateDelegate> {
+  const filename = `${name}.hbs`;
+  if (!(filename in Handlebars.templates)) {
+    await loadCachedTemplate(name);
+  }
+  return Handlebars.templates[filename];
 }
