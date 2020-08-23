@@ -105,7 +105,6 @@ export async function loadTemplate(
   name: string
 ): Promise<HandlebarsTemplateDelegate> {
   const filename = `${name}.hbs`;
-  console.log("h " + Handlebars.templates);
   if (!(filename in Handlebars.templates)) {
     await loadCachedTemplate(name);
   }

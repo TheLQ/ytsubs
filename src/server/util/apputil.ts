@@ -1,4 +1,6 @@
 import { WrappedError } from "./error";
+import formidable from "formidable";
+import express from "express";
 
 /**
  * Promise.allSettled that throws a WrappedError, avoiding silent failures
@@ -28,4 +30,46 @@ export async function promiseAllThrow<T>(
     );
   }
   return result;
+}
+
+interface FormData {
+  fields: formidable.Fields;
+  files: formidable.Files;
+  memoryFile: Buffer;
+}
+
+export function parseForm(
+  req: express.Request,
+  inMemoryFiles = true
+): Promise<FormData> {
+  return new Promise((resolve, reject) => {
+    const form = new formidable.IncomingForm();
+    form.multiples = true;
+
+    // Do not unnecessarily write xml/json to disk, just to read it back and delete
+    let memoryFile = Buffer.of();
+    if (inMemoryFiles) {
+      form.onPart = function(part) {
+        // let formidable handle only non-file parts
+        if (part.filename === "" || !part.mime) {
+          // used internally, please do not override!
+          form.handlePart(part);
+        }
+        part.on("data", (buffer: Buffer) => {
+          memoryFile = Buffer.concat([memoryFile, buffer]);
+        });
+      };
+    }
+
+    form.parse(req, (err, fields, files) => {
+      if (err) {
+        reject(err);
+      }
+      resolve({
+        fields,
+        files,
+        memoryFile
+      });
+    });
+  });
 }

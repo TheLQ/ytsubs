@@ -10,15 +10,13 @@
   <div id="app">
     <h1>Subscriptions</h1>
     <div class="subscription-box">
-        <form>
+        <form action="" method="POST" enctype="multipart/form-data" >
             <label>
                 Upload subscription list from <a href="https://www.youtube.com/subscription_manager?action_takeout=1">Youtube Subscription Manager</a>
-                <input type="file" name="xml" accept="application/xml, text/xml, text/x-opml">
-                <button name="uploadSubscriptions" />
+                <input type="file" name="xml">
+                <button name="uploadSubscriptions">Upload Subscriptions</button>
             </label>
         </form>
-        
-
     </div>
     <ul>
       {{#each subscription}}

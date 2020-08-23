@@ -2,7 +2,8 @@ import logger from "../util/logger";
 import { loadTemplate } from "../templates";
 import express from "express";
 import { Context } from "../index";
-import formidable, { IncomingForm } from "formidable";
+import { doDebugWork } from "./DebugRoute";
+import { parseForm } from "../util/apputil";
 
 const log = logger("server/routes/ItemRoute");
 
@@ -15,7 +16,11 @@ export async function getSubscription(
     "subscriptions"
   );
 
-  res.send(JSON.stringify(await context.db.getVideos()));
+  res.send(
+    template({
+      subscriptions: []
+    })
+  );
 }
 
 export async function postSubscription(
@@ -23,11 +28,14 @@ export async function postSubscription(
   res: express.Response,
   context: Context
 ) {
-  const form = formidable({ multiples: true }) as IncomingForm;
-  form.parse(req, (err, fields, files) => {
-    if (err) {
-      throw err;
-    }
-    res.json({ fields, files });
-  });
+  const formData = await parseForm(req);
+
+  if (formData.fields.uploadSubscriptions != undefined) {
+    console.log("subscriptions!");
+    console.log(formData.memoryFile);
+  } else {
+    await doDebugWork(formData.fields);
+  }
+
+  return getSubscription(req, res, context);
 }
