@@ -33,6 +33,10 @@ Handlebars.registerHelper("ifequals", function(
   }
   return options.inverse(this);
 });
+// not created for templates
+if (Handlebars.templates == undefined) {
+  Handlebars.templates = {};
+}
 
 export async function init() {
   if (PROD) {
@@ -96,6 +100,7 @@ export async function loadTemplate(
   name: string
 ): Promise<HandlebarsTemplateDelegate> {
   const filename = `${name}.hbs`;
+  console.log("h " + Handlebars.templates);
   if (!(filename in Handlebars.templates)) {
     await loadCachedTemplate(name);
   }

@@ -2,7 +2,8 @@ import express from "express";
 import logger from "./util/logger";
 import * as error from "./util/error";
 import VideoRoute from "./routes/VideoRoute";
-import { Storage } from "../cli/storage";
+import { Storage } from "./util/storage";
+import { getSubscription, postSubscription } from "./routes/SubscriptionsRoute";
 
 const log = logger("server");
 
@@ -15,6 +16,9 @@ async function init() {
     await context.init();
 
     app.get("/", prehandle(VideoRoute, context));
+
+    app.get("/subscriptions", prehandle(getSubscription, context));
+    app.post("/subscriptions", prehandle(postSubscription, context));
 
     app.listen(port, () => {
       console.log(`Example app listening at http://localhost:${port}`);
