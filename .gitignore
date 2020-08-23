@@ -8,3 +8,4 @@ dist/**/*.cjs
 dist/**/*.cjs.map
 
 client/
+yarn-error.log

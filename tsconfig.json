@@ -9,12 +9,12 @@
 
     "moduleResolution": "node",
 
-    "outDir": "./dist",
+    "outDir": "./dist/server",
     "sourceMap": true,
     "noImplicitAny": true,
 
     "esModuleInterop": true
   },
   // "include": ["./src/**/*", "./src/**/*.vue"]
-  "include": ["src"]
+  "include": ["src/server"]
 }
