@@ -4,6 +4,7 @@ import * as error from "./util/error";
 import VideoRoute from "./routes/VideoRoute";
 import { Storage } from "./util/storage";
 import { getSubscription, postSubscription } from "./routes/SubscriptionsRoute";
+import { initHandlebars } from "./templates";
 
 const log = logger("server");
 
@@ -14,6 +15,8 @@ async function init() {
 
     const context = new Context();
     await context.init();
+
+    await initHandlebars();
 
     app.get("/", prehandle(VideoRoute, context));
 
@@ -52,7 +55,7 @@ export function prehandle(callback: uwsCallback, context: Context) {
       }
     } catch (err) {
       const message = error.prettyError(err);
-      res.send(message);
+      res.send(`<pre>${message}</pre>`);
       log.error(err);
     }
   };

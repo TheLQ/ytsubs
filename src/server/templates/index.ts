@@ -35,10 +35,15 @@ Handlebars.registerHelper("ifequals", function(
 });
 // not created for templates
 if (Handlebars.templates == undefined) {
-  Handlebars.templates = {};
+  /*
+  Typescript def says templates is readonly, but only because Precompiled templates init it
+  Our on-demand templates simply re-use that map
+  */
+  const _handlebars = Handlebars as any;
+  _handlebars.templates = {};
 }
 
-export async function init() {
+export async function initHandlebars() {
   if (PROD) {
     loadPartials();
   } else {
