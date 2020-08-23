@@ -1,5 +1,4 @@
 import App from "uWebSockets.js";
-import { resolve } from "path";
 import { Storage } from "./storage";
 
 async function startApp() {

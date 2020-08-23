@@ -1,4 +1,5 @@
-import sqlite from "sqlite";
+import sqlite3 from "sqlite3";
+import { open, Database } from "sqlite";
 
 interface IVideoStorage {
   videoId: string;
@@ -8,16 +9,22 @@ interface IVideoStorage {
   description: string;
 }
 
+type DB = Database<sqlite3.Database, sqlite3.Statement>;
+
 export class Storage {
   public static async create(dbpath: string) {
-    const db = await sqlite.open(dbpath);
+    const db = await open({
+      filename: dbpath,
+      driver: sqlite3.Database
+    });
+    console.log(db);
 
-    const tableExists = await db.get(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name='{videos}';"
-    );
-    if (tableExists.length !== 1) {
-      console.log("creating database");
-      await db.run(`
+    // const tableExists = await db.get(
+    //   "SELECT name FROM sqlite_master WHERE type='table' AND name='{videos}';"
+    // );
+    // if (tableExists.length !== 1) {
+    //   console.log("creating database");
+    await db.run(`
         create table if not exists "videos" (
             "videoId" varchar(11) not null,
             "channelId" varchar(22) not null,
@@ -26,13 +33,13 @@ export class Storage {
             "description" text not null
         )
         `);
-    }
+    // }
     return new Storage(db);
   }
 
-  private db: sqlite.Database;
+  private db: DB;
 
-  private constructor(db: sqlite.Database) {
+  private constructor(db: DB) {
     this.db = db;
   }
 
@@ -54,6 +61,11 @@ export class Storage {
   }
 
   public async getVideos(): Promise<IVideoStorage[]> {
-    return await this.db.get("SELECT * from videos");
+    const value = await this.db.get("SELECT * from videos");
+    if (value == undefined) {
+      return [];
+    } else {
+      return value;
+    }
   }
 }

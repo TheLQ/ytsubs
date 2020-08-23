@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  {{> partialHead}}
+</head>
+
+<body>
+  {{> partialBodyStart}}
+  <div id="app">
+    <h1>Vaults</h1>
+    <ul>
+      {{#each vaults}}
+      <li><a href="/vault/{{name}}">{{name}}</a></li>
+      {{/each}}
+    </ul>
+  </div>
+</body>
+
+</html>
