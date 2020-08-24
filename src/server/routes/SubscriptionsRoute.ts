@@ -4,7 +4,7 @@ import express from "express";
 import { Context } from "../index";
 import { doDebugWork } from "./DebugRoute";
 import { parseForm } from "../util/apputil";
-import { parseSubscriptionFile } from "../util/youtube";
+import { parseSubscriptionsOpml } from "../util/youtube";
 import { storage } from "googleapis/build/src/apis/storage";
 
 const log = logger("server/routes/SubscriptionsRoute");
@@ -35,7 +35,7 @@ export async function postSubscription(
   const formData = await parseForm(req);
 
   if (formData.fields.uploadSubscriptions != undefined) {
-    const subs = parseSubscriptionFile(formData.memoryFile.toString("utf8"));
+    const subs = parseSubscriptionsOpml(formData.memoryFile.toString("utf8"));
     await context.db.addSubscriptions(subs);
   } else {
     await doDebugWork(formData.fields);

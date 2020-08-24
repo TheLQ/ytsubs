@@ -18,6 +18,8 @@ async function init() {
 
     await initHandlebars();
 
+    app.use("/client", express.static("dist/client"));
+
     app.get("/", prehandle(VideoRoute, context));
 
     app.get("/subscriptions", prehandle(getSubscription, context));

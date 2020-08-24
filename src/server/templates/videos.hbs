@@ -8,13 +8,26 @@
 <body>
   {{> partialBodyStart}}
   <div id="app">
-    <h1>Vaults</h1>
-    <ul>
-      {{#each vaults}}
-      <li><a href="/vault/{{name}}">{{name}}</a></li>
-      {{/each}}
-    </ul>
-  </div>
+    <h1>Videos</h1>
+    <div class="subscription-box">
+      <form action="" method="POST" enctype="multipart/form-data">
+        <button name="downloadFeeds">Download channel feeds</button>
+      </form>
+    </div>
+
+    <div class="video-container">
+      {{#each videos}}
+      <div class="video-box">
+        <a href="https://www.youtube.com/watch?v={{videoId}}">
+          <img src="https://i4.ytimg.com/vi/GmMvbBqnNn0/hqdefault.jpg" />
+          <h3>{{ videoItem.title }}</h3>
+        </a>
+        <div>
+          <a href="https://www.youtube.com/channel/{{channelId}}">{{channelName}}</a>
+        </div>
+        {{/each}}
+      </div>
+    </div>
 </body>
 
 </html>

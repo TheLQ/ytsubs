@@ -3,7 +3,7 @@ import google_pkg from "googleapis";
 import { OAuth2Client } from "googleapis-common";
 import readline from "readline";
 import parseXml from "@rgrove/parse-xml";
-import { SubscriptionStorage } from "./storage";
+import { SubscriptionStorage, VideoStorage } from "./storage";
 
 // Workaround: The requested module 'googleapis' is expected to be of type CommonJS, which does not support named exports.
 const { google } = google_pkg;
@@ -147,29 +147,39 @@ export function getChannel(auth: OAuth2Client) {
   );
 }
 
-export function parseSubscriptionFile(content: string): SubscriptionStorage[] {
-  const xml = parseXml(content);
-  const opml = parseChildren(xml.children)[0];
+/**
+ * Parse subscription list from https://www.youtube.com/subscription_manager
+ * @param xmlContent
+ */
+export function parseSubscriptionsOpml(
+  xmlContent: string
+): SubscriptionStorage[] {
+  const xml = parseXml(xmlContent);
+  const opml = filterChildrenFormatting(xml.children)[0] as parseXml.Element;
   if (opml.name != "opml") {
     console.log("opml", opml);
     throw new Error("can't find opml");
   }
-  const body = parseChildren(opml.children)[0];
+  const body = filterChildrenFormatting(opml.children)[0] as parseXml.Element;
   if (body.name != "body") {
     console.log("body", body);
     throw new Error("can't find body");
   }
-  const parentOutline = parseChildren(body.children)[0];
+  const parentOutline = filterChildrenFormatting(
+    body.children
+  )[0] as parseXml.Element;
   if (parentOutline.name != "outline") {
     console.log("parentOutline", body);
     throw new Error("can't find parentOutline");
   }
 
-  return parseChildren(parentOutline.children).map(outline => {
+  return (filterChildrenFormatting(
+    parentOutline.children
+  ) as parseXml.Element[]).map(outline => {
     if (outline.attributes.text != outline.attributes.title) {
       throw new Error("Expected title and text to match " + outline);
     }
-    const name = outline.attributes.text;
+    const channelName = outline.attributes.text;
 
     const urlPrefix = "https://www.youtube.com/feeds/videos.xml?channel_id=";
     let channelId = outline.attributes.xmlUrl;
@@ -180,22 +190,98 @@ export function parseSubscriptionFile(content: string): SubscriptionStorage[] {
 
     return {
       channelId,
-      name
+      channelName
     };
   });
 }
 
+export function parseChannelFeed(xmlContent: string): VideoStorage[] {
+  const xml = parseXml(xmlContent);
+  const feed = filterChildrenFormatting(xml.children)[0] as parseXml.Element;
+  if (feed.name != "feed") {
+    console.log("feed", feed);
+    throw new Error("can't find feed");
+  }
+
+  const videos: VideoStorage[] = [];
+  for (const entry of filterChildrenFormatting(
+    feed.children
+  ) as parseXml.Element[]) {
+    if (entry.name != "entry") {
+      continue;
+    }
+    let videoId = undefined;
+    let channelId = undefined;
+    let title = undefined;
+    let published = undefined;
+    let description = undefined;
+
+    for (const entryChild of filterChildrenFormatting(
+      entry.children
+    ) as parseXml.Element[]) {
+      if (entryChild.name == "yt:videoId") {
+        videoId = getChildText(entryChild);
+      } else if (entryChild.name == "yt:channelId") {
+        channelId = getChildText(entryChild);
+      } else if (entryChild.name == "published") {
+        published = getChildText(entryChild);
+      } else if (entryChild.name == "title") {
+        title = getChildText(entryChild);
+      } else if (entryChild.name == "media:group") {
+        for (const mediaChild of filterChildrenFormatting(
+          entryChild.children
+        ) as parseXml.Element[]) {
+          if (mediaChild.name == "media:description") {
+            description = getChildText(mediaChild);
+            break;
+          }
+        }
+      }
+    }
+
+    if (!videoId || !channelId || !title || !published || !description) {
+      throw new Error("missing data for entry");
+    }
+
+    videos.push({
+      videoId,
+      channelId,
+      title,
+      published,
+      description
+    });
+  }
+
+  return videos;
+}
+
 /**
- * ??????
+ * Remove spacing text nodes from XML formatting
  * @param children
  */
-function parseChildren(children: any) {
+function filterChildrenFormatting(
+  children: parseXml.NodeBase[]
+): parseXml.NodeBase[] {
   var newChildren = [...children];
   for (var i = newChildren.length - 1; i >= 0; i--) {
     const node = newChildren[i];
-    if (node.type == "text" && node.text.trim() == "") {
+    if (node.type == "text" && (node as parseXml.Text).text.trim() == "") {
       newChildren.splice(i, 1);
     }
   }
   return newChildren;
+}
+
+function getChildText(element: parseXml.Element) {
+  if (element.children.length != 1) {
+    throw new Error("too many children");
+  }
+  const child = element.children[0] as parseXml.Text;
+  if (child.type != "text") {
+    throw new Error("expected text node");
+  }
+  if (child.text.trim() == "") {
+    throw new Error("empty text node?");
+  }
+  return child.text;
 }

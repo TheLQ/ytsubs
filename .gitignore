@@ -7,5 +7,5 @@ dist/**/*.js.map
 dist/**/*.cjs
 dist/**/*.cjs.map
 
-client/
+/client/
 yarn-error.log
