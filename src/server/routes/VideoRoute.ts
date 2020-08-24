@@ -3,7 +3,7 @@ import { loadTemplate } from "../templates";
 import express from "express";
 import { Context } from "../index";
 
-const log = logger("server/routes/ItemRoute");
+const log = logger("server/routes/VideoRoute");
 
 export default async function getVideos(
   req: express.Request,

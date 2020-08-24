@@ -7,7 +7,7 @@ import { parseForm } from "../util/apputil";
 import { parseSubscriptionFile } from "../util/youtube";
 import { storage } from "googleapis/build/src/apis/storage";
 
-const log = logger("server/routes/ItemRoute");
+const log = logger("server/routes/SubscriptionsRoute");
 
 export async function getSubscription(
   req: express.Request,
