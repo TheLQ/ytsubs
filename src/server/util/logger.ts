@@ -51,8 +51,9 @@ export default function getLogger(filename: string): winston.Logger {
       // display
       winston.format.cli(),
       winston.format((info, opts) => {
-        info[tripleBeam.MESSAGE] = `${info["timestamp"]} ${filename} ${
-          info[tripleBeam.MESSAGE]
+        // TS Workaround: Type 'unique symbol' cannot be used as an index
+        info[tripleBeam.MESSAGE as any] = `${info["timestamp"]} ${filename} ${
+          info[tripleBeam.MESSAGE as any]
         }`;
         return info;
       })()

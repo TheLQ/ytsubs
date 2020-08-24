@@ -1,10 +1,12 @@
 import fs from "fs";
 import google_pkg from "googleapis";
-const { google } = google_pkg;
 import { OAuth2Client } from "googleapis-common";
 import readline from "readline";
 import parseXml from "@rgrove/parse-xml";
 import { SubscriptionStorage } from "./storage";
+
+// Workaround: The requested module 'googleapis' is expected to be of type CommonJS, which does not support named exports.
+const { google } = google_pkg;
 
 type YTCallback = (auth: OAuth2Client) => void;
 
@@ -137,8 +139,8 @@ export function getChannel(auth: OAuth2Client) {
           "This channel's ID is %s. Its title is '%s', and " +
             "it has %s views.",
           channels[0].id,
-          channels[0].snippet.title,
-          channels[0].statistics.viewCount
+          channels[0].snippet?.title,
+          channels[0].statistics?.viewCount
         );
       }
     }
