@@ -1,7 +1,10 @@
 import fs from "fs";
-import { google } from "googleapis";
+import google_pkg from "googleapis";
+const { google } = google_pkg;
 import { OAuth2Client } from "googleapis-common";
 import readline from "readline";
+import parseXml from "@rgrove/parse-xml";
+import { SubscriptionStorage } from "./storage";
 
 type YTCallback = (auth: OAuth2Client) => void;
 
@@ -140,4 +143,57 @@ export function getChannel(auth: OAuth2Client) {
       }
     }
   );
+}
+
+export function parseSubscriptionFile(content: string): SubscriptionStorage[] {
+  const xml = parseXml(content);
+  const opml = parseChildren(xml.children)[0];
+  if (opml.name != "opml") {
+    console.log("opml", opml);
+    throw new Error("can't find opml");
+  }
+  const body = parseChildren(opml.children)[0];
+  if (body.name != "body") {
+    console.log("body", body);
+    throw new Error("can't find body");
+  }
+  const parentOutline = parseChildren(body.children)[0];
+  if (parentOutline.name != "outline") {
+    console.log("parentOutline", body);
+    throw new Error("can't find parentOutline");
+  }
+
+  return parseChildren(parentOutline.children).map(outline => {
+    if (outline.attributes.text != outline.attributes.title) {
+      throw new Error("Expected title and text to match " + outline);
+    }
+    const name = outline.attributes.text;
+
+    const urlPrefix = "https://www.youtube.com/feeds/videos.xml?channel_id=";
+    let channelId = outline.attributes.xmlUrl;
+    if (outline.attributes.xmlUrl.indexOf(urlPrefix) == -1) {
+      throw new Error(`unexpected url ${channelId}`);
+    }
+    channelId = channelId.substr(urlPrefix.length);
+
+    return {
+      channelId,
+      name
+    };
+  });
+}
+
+/**
+ * ??????
+ * @param children
+ */
+function parseChildren(children: any) {
+  var newChildren = [...children];
+  for (var i = newChildren.length - 1; i >= 0; i--) {
+    const node = newChildren[i];
+    if (node.type == "text" && node.text.trim() == "") {
+      newChildren.splice(i, 1);
+    }
+  }
+  return newChildren;
 }
