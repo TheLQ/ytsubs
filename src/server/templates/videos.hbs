@@ -18,12 +18,13 @@
     <div class="video-container">
       {{#each videos}}
       <div class="video-box">
-        <a href="https://www.youtube.com/watch?v={{videoId}}">
+        <a class="video-link" href="https://www.youtube.com/watch?v={{videoId}}">
           <img src="https://i4.ytimg.com/vi/{{videoId}}/mqdefault.jpg" />
-          <h3>{{ videoItem.title }}</h3>
+          <h3 class="video-title">{{ title }}</h3>
         </a>
-        <div>
-          <a href="https://www.youtube.com/channel/{{channelId}}">{{channelName}}</a>
+        <div class="video-channel-wrapper">
+          <a class="video-channel" href="https://www.youtube.com/channel/{{channelId}}">{{channelName}}</a>
+        </div>
         </div>
       </div>
       {{/each}}
