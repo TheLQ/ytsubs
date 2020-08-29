@@ -19,14 +19,14 @@
       {{#each videos}}
       <div class="video-box">
         <a href="https://www.youtube.com/watch?v={{videoId}}">
-          <img src="https://i4.ytimg.com/vi/GmMvbBqnNn0/hqdefault.jpg" />
+          <img src="https://i4.ytimg.com/vi/{{videoId}}/mqdefault.jpg" />
           <h3>{{ videoItem.title }}</h3>
         </a>
         <div>
           <a href="https://www.youtube.com/channel/{{channelId}}">{{channelName}}</a>
         </div>
-        {{/each}}
       </div>
+      {{/each}}
     </div>
 </body>
 

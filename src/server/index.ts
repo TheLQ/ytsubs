@@ -1,10 +1,12 @@
 import express from "express";
 import logger from "./util/logger";
 import * as error from "./util/error";
-import VideoRoute from "./routes/VideoRoute";
+import { getVideos, postVideos } from "./routes/VideoRoute";
 import { Storage } from "./util/storage";
 import { getSubscription, postSubscription } from "./routes/SubscriptionsRoute";
 import { initHandlebars } from "./templates";
+import fs from "fs";
+import { parseSubscriptionsOpml } from "./util/youtube";
 
 const log = logger("server");
 
@@ -20,7 +22,8 @@ async function init() {
 
     app.use("/client", express.static("dist/client"));
 
-    app.get("/", prehandle(VideoRoute, context));
+    app.get("/", prehandle(getVideos, context));
+    app.post("/", prehandle(postVideos, context));
 
     app.get("/subscriptions", prehandle(getSubscription, context));
     app.post("/subscriptions", prehandle(postSubscription, context));
@@ -72,5 +75,14 @@ export class Context {
 
   async init() {
     this.db = await Storage.create("./client/database.sqlite");
+
+    if ((await this.db.getSubscriptions()).length == 0) {
+      log.info("first run, loading subscriptions");
+      const contentXml = await fs.promises.readFile(
+        "client/subscription_manager.xml",
+        "utf8"
+      );
+      this.db.addSubscriptions(parseSubscriptionsOpml(contentXml));
+    }
   }
 }

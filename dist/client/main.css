@@ -6,5 +6,10 @@
 .video-box {
   margin: 5px;
   border: 1px solid;
+  /*
+  https://gist.github.com/bojanvidanovic/0b31443827c2c424469da754376180d4
+  480px - too big
+  
   width: 320px;
+  */
 }

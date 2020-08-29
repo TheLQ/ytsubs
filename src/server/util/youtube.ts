@@ -4,6 +4,7 @@ import { OAuth2Client } from "googleapis-common";
 import readline from "readline";
 import parseXml from "@rgrove/parse-xml";
 import { SubscriptionStorage, VideoStorage } from "./storage";
+import { WrappedError } from "./error";
 
 // Workaround: The requested module 'googleapis' is expected to be of type CommonJS, which does not support named exports.
 const { google } = google_pkg;
@@ -147,6 +148,9 @@ export function getChannel(auth: OAuth2Client) {
   );
 }
 
+export const feedUrlPrefix =
+  "https://www.youtube.com/feeds/videos.xml?channel_id=";
+
 /**
  * Parse subscription list from https://www.youtube.com/subscription_manager
  * @param xmlContent
@@ -181,12 +185,11 @@ export function parseSubscriptionsOpml(
     }
     const channelName = outline.attributes.text;
 
-    const urlPrefix = "https://www.youtube.com/feeds/videos.xml?channel_id=";
     let channelId = outline.attributes.xmlUrl;
-    if (outline.attributes.xmlUrl.indexOf(urlPrefix) == -1) {
+    if (outline.attributes.xmlUrl.indexOf(feedUrlPrefix) == -1) {
       throw new Error(`unexpected url ${channelId}`);
     }
-    channelId = channelId.substr(urlPrefix.length);
+    channelId = channelId.substr(feedUrlPrefix.length);
 
     return {
       channelId,
@@ -196,63 +199,91 @@ export function parseSubscriptionsOpml(
 }
 
 export function parseChannelFeed(xmlContent: string): VideoStorage[] {
-  const xml = parseXml(xmlContent);
-  const feed = filterChildrenFormatting(xml.children)[0] as parseXml.Element;
-  if (feed.name != "feed") {
-    console.log("feed", feed);
-    throw new Error("can't find feed");
-  }
-
-  const videos: VideoStorage[] = [];
-  for (const entry of filterChildrenFormatting(
-    feed.children
-  ) as parseXml.Element[]) {
-    if (entry.name != "entry") {
-      continue;
+  try {
+    const xml = parseXml(xmlContent);
+    const feed = filterChildrenFormatting(xml.children)[0] as parseXml.Element;
+    if (feed.name != "feed") {
+      console.log("feed", feed);
+      throw new Error("can't find feed");
     }
-    let videoId = undefined;
-    let channelId = undefined;
-    let title = undefined;
-    let published = undefined;
-    let description = undefined;
 
-    for (const entryChild of filterChildrenFormatting(
-      entry.children
+    const videos: VideoStorage[] = [];
+    for (const entry of filterChildrenFormatting(
+      feed.children
     ) as parseXml.Element[]) {
-      if (entryChild.name == "yt:videoId") {
-        videoId = getChildText(entryChild);
-      } else if (entryChild.name == "yt:channelId") {
-        channelId = getChildText(entryChild);
-      } else if (entryChild.name == "published") {
-        published = getChildText(entryChild);
-      } else if (entryChild.name == "title") {
-        title = getChildText(entryChild);
-      } else if (entryChild.name == "media:group") {
-        for (const mediaChild of filterChildrenFormatting(
-          entryChild.children
+      let videoId = undefined;
+      let channelId = undefined;
+      let title = undefined;
+      let published = undefined;
+      let description = undefined;
+      try {
+        if (entry.name != "entry") {
+          continue;
+        }
+
+        for (const entryChild of filterChildrenFormatting(
+          entry.children
         ) as parseXml.Element[]) {
-          if (mediaChild.name == "media:description") {
-            description = getChildText(mediaChild);
-            break;
+          if (entryChild.name == "yt:videoId") {
+            videoId = getChildText(entryChild);
+          } else if (entryChild.name == "yt:channelId") {
+            channelId = getChildText(entryChild);
+          } else if (entryChild.name == "published") {
+            published = getChildText(entryChild);
+          } else if (entryChild.name == "title") {
+            title = getChildText(entryChild);
+          } else if (entryChild.name == "media:group") {
+            for (const mediaChild of filterChildrenFormatting(
+              entryChild.children
+            ) as parseXml.Element[]) {
+              if (mediaChild.name == "media:description") {
+                description = "";
+                for (const descriptionNode of mediaChild.children) {
+                  if (descriptionNode.type != "text") {
+                    throw new Error("expected only text node in description");
+                  }
+                  description += (descriptionNode as parseXml.Text).text;
+                }
+                break;
+              }
+            }
           }
         }
+      } catch (e) {
+        throw new WrappedError(`failed in video ${videoId}`, e);
       }
+
+      if (
+        !videoId ||
+        !channelId ||
+        !title ||
+        !published ||
+        description == undefined
+      ) {
+        throw new Error(
+          "missing data for entry\n" +
+            `videoId ${videoId}\n` +
+            `channelId ${channelId}\n` +
+            `title ${title}\n` +
+            `published ${published}\n` +
+            `description ${description}\n`
+        );
+      }
+
+      videos.push({
+        videoId,
+        channelId,
+        title,
+        published,
+        description
+      });
     }
 
-    if (!videoId || !channelId || !title || !published || !description) {
-      throw new Error("missing data for entry");
-    }
-
-    videos.push({
-      videoId,
-      channelId,
-      title,
-      published,
-      description
-    });
+    return videos;
+  } catch (e) {
+    fs.writeFile("error.xml", xmlContent, () => {});
+    throw new WrappedError("Failed to import xml, wrote to error.xml", e);
   }
-
-  return videos;
 }
 
 /**
@@ -272,7 +303,7 @@ function filterChildrenFormatting(
   return newChildren;
 }
 
-function getChildText(element: parseXml.Element) {
+function getChildText(element: parseXml.Element, failOnEmpty = true) {
   if (element.children.length != 1) {
     throw new Error("too many children");
   }
@@ -280,8 +311,9 @@ function getChildText(element: parseXml.Element) {
   if (child.type != "text") {
     throw new Error("expected text node");
   }
-  if (child.text.trim() == "") {
+  const text = child.text.trim();
+  if (failOnEmpty && text == "") {
     throw new Error("empty text node?");
   }
-  return child.text;
+  return text;
 }
