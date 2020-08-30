@@ -3,7 +3,11 @@ import google_pkg from "googleapis";
 import { OAuth2Client } from "googleapis-common";
 import readline from "readline";
 import parseXml from "@rgrove/parse-xml";
-import { SubscriptionStorage, VideoStorage } from "./storage";
+import {
+  SubscriptionStorage,
+  VideoStorage,
+  SubscriptionStorageSimple
+} from "./storage";
 import { WrappedError } from "./error";
 
 // Workaround: The requested module 'googleapis' is expected to be of type CommonJS, which does not support named exports.
@@ -157,7 +161,7 @@ export const feedUrlPrefix =
  */
 export function parseSubscriptionsOpml(
   xmlContent: string
-): SubscriptionStorage[] {
+): SubscriptionStorageSimple[] {
   const xml = parseXml(xmlContent);
   const opml = filterChildrenFormatting(xml.children)[0] as parseXml.Element;
   if (opml.name != "opml") {

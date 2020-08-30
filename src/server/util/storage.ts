@@ -196,7 +196,7 @@ export class Storage {
     }
   }
 
-  public async addSubscriptions(subscriptions: SubscriptionStorage[]) {
+  public async addSubscriptions(subscriptions: SubscriptionStorageSimple[]) {
     if (subscriptions.length == 0) {
       return;
     }
