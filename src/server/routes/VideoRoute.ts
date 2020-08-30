@@ -5,7 +5,7 @@ import { Context } from "../index";
 import { parseForm } from "../util/apputil";
 import { doDebugWork } from "./DebugRoute";
 import * as api from "../api";
-import moment from "moment";
+import { GetVideoOptions } from "../util/storage";
 
 const log = logger("server/routes/VideoRoute");
 
@@ -17,16 +17,7 @@ export async function getVideos(
 ): Promise<void> {
   const template: HandlebarsTemplateDelegate = await loadTemplate("videos");
 
-  let videosRaw = await context.db.getVideos({
-    limit: 100,
-    group: req.query.group as string,
-    channelId: req.query.channelId as string
-  });
-
-  let videos = videosRaw.map((entry: any) => {
-    entry.publishedRelative = moment(entry.published).fromNow();
-    return entry;
-  });
+  const videos = api.getVideos(context, req.query as GetVideoOptions);
 
   res.send(
     template({

@@ -4,6 +4,8 @@ import * as youtube from "./util/youtube";
 import asyncPool from "tiny-async-pool";
 import { WrappedError } from "./util/error";
 import bent from "bent";
+import { GetVideoOptions } from "./util/storage";
+import moment from "moment";
 
 const { StatusError } = bent;
 
@@ -44,4 +46,18 @@ export async function downloadFeeds(context: Context, messages: string[]) {
       );
     }
   });
+}
+
+export async function getVideos(context: Context, options: GetVideoOptions) {
+  let videosRaw = await context.db.getVideos({
+    ...options,
+    limit: 100
+  });
+
+  let videos = videosRaw.map((entry: any) => {
+    entry.publishedRelative = moment(entry.published).fromNow();
+    return entry;
+  });
+
+  return videos;
 }

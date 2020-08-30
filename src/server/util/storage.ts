@@ -32,10 +32,10 @@ export interface ChannelGroupMapping {
 
 type DB = Database<sqlite3.Database, sqlite3.Statement>;
 
-type GetVideoOptions = {
+export type GetVideoOptions = {
   group?: string;
   channelId?: string;
-  limit: number;
+  limit?: number;
 };
 
 type GetChannelOptions = {
