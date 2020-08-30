@@ -303,9 +303,9 @@ export class Storage {
     );
   }
 
-  public async addChannelGroupMapping(groupMapping: ChannelGroupMapping[]) {
+  public async addChannelGroupMapping(groupMappings: ChannelGroupMapping[]) {
     return await this.upsert(
-      groupMapping,
+      groupMappings,
       (row, result) => {
         result.push(row.channelId);
         result.push(row.groupName);
@@ -313,6 +313,16 @@ export class Storage {
       sqlPlaceholders =>
         `INSERT INTO channelGroupMap (channelId, groupName) VALUES ${sqlPlaceholders} ON CONFLICT DO NOTHING`
     );
+  }
+
+  public async removeChannelGroupMapping(groupMappings: ChannelGroupMapping[]) {
+    // no real easy way to do batching
+    for (const groupMapping of groupMappings) {
+      await this.db.run(
+        "DELETE FROM channelGroupMap WHERE groupName = ? AND channelId = ?",
+        [groupMapping.groupName, groupMapping.channelId]
+      );
+    }
   }
 
   private async upsert<T>(

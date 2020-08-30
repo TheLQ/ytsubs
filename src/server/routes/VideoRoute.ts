@@ -17,7 +17,7 @@ export async function getVideos(
 ): Promise<void> {
   const template: HandlebarsTemplateDelegate = await loadTemplate("videos");
 
-  const videos = api.getVideos(context, req.query as GetVideoOptions);
+  const videos = await api.getVideos(context, req.query as GetVideoOptions);
 
   res.send(
     template({
