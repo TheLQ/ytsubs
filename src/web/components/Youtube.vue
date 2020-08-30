@@ -19,7 +19,7 @@ export default Vue.extend<
 >({
   data: function() {
     console.log("youtube data");
-    const vueData = this.$d as IVueData;
+    const vueData = this.$data as IVueData;
     return {
       isLoggedIn: vueData.youtube.signedIn
     };

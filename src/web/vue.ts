@@ -1,8 +1,9 @@
 import Vue from "vue";
 import App from "./components/App.vue";
+import { VideoStorage } from "../server/util/storage";
 
 export interface IVueData {
-  videos: IVideo[];
+  videos: VideoStorage[];
   youtube: IYoutube;
 }
 

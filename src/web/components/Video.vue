@@ -13,14 +13,14 @@
 
 <script lang="ts">
 import Vue, { VueConstructor } from "vue";
-import { IVideo } from "../index";
+import { VideoStorage } from "../../server/util/storage";
 
 export default Vue.extend<
   {},
   {},
   {},
   {
-    videoItem: IVideo;
+    videoItem: VideoStorage;
   }
 >({
   props: {
