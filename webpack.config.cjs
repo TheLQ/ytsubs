@@ -5,7 +5,9 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin')
 module.exports = {
   entry: "./src/web/index.ts",
   devtool: "inline-source-map",
-  target: "node",
+  // note: This will break Vue in the browser! 
+  // target: "node",
+
   module: {
     rules: [
       // {
@@ -18,8 +20,15 @@ module.exports = {
       },
       {
         test: /\.tsx?$/,
-        use: "ts-loader",
-        exclude: /node_modules/
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: "ts-loader",
+            // get some very strange errors without this
+            // export 'default' (imported as 'mod') was not found in
+            options: { appendTsSuffixTo: [/\.vue$/] }
+          }
+        ]
       }
     ]
   },
@@ -41,6 +50,7 @@ module.exports = {
     // make sure to include the plugin!
     new VueLoaderPlugin()
   ],
+  devtool: "source-map",
   output: {
     filename: "bundle.js",
     path: path.resolve(__dirname, "dist")

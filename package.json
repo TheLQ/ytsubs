@@ -54,13 +54,9 @@
     "webpack-cli": "^3.3.12"
   },
   "scripts": {
-    "compile": "rollup -c",
-    "compilewatch": "rollup -c -w",
     "format": "prettier --write 'src/**/*.{ts,vue}' dist/index.html dist/main.css package.json rollup.config.js tsconfig.json tslint.json",
     "run": "node --es-module-specifier-resolution=node -r source-map-support/register dist/server/index.js",
-    "build": "(npm run build:types || true) && npm run build:js",
-    "build:types": "tsc -p .",
-    "build:js": "babel src --out-dir dist/cli --extensions \".ts,.tsx\" --source-maps inline"
+    "compileweb": "node --max-old-space-size=8192 ./node_modules/.bin/webpack --config webpack.config.cjs"
   },
   "husky": {
     "hooks": {

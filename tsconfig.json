@@ -16,5 +16,5 @@
     "esModuleInterop": true
   },
   // "include": ["./src/**/*", "./src/**/*.vue"]
-  "include": ["src/server"]
+  "include": ["src/server", "./src/**/*", "./src/**/*.vue"]
 }
