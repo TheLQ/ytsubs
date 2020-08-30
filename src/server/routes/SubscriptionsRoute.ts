@@ -6,6 +6,7 @@ import { doDebugWork } from "./DebugRoute";
 import { parseForm } from "../util/apputil";
 import { parseSubscriptionsOpml } from "../util/youtube";
 import { storage } from "googleapis/build/src/apis/storage";
+import * as api from "../api";
 
 const log = logger("server/routes/SubscriptionsRoute");
 
@@ -14,11 +15,9 @@ export async function getSubscription(
   res: express.Response,
   context: Context
 ): Promise<void> {
-  const template: HandlebarsTemplateDelegate = await loadTemplate(
-    "subscriptions"
-  );
+  const template = await loadTemplate("subscriptions");
 
-  const subscriptions = await context.db.getSubscriptions();
+  const subscriptions = await api.getSubscriptions(context);
   const groups = await context.db.getChannelGroups();
 
   log.debug(JSON.stringify(subscriptions));

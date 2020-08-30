@@ -61,3 +61,16 @@ export async function getVideos(context: Context, options: GetVideoOptions) {
 
   return videos;
 }
+
+export async function getSubscriptions(context: Context) {
+  const subscriptionsRaw = await context.db.getSubscriptions();
+
+  const subscriptions = subscriptionsRaw.map(entry => {
+    if (entry.groups) {
+      entry.groupsArray = entry.groups.split(",");
+    }
+    return entry;
+  });
+
+  return subscriptions;
+}

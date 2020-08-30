@@ -15,10 +15,15 @@ export interface VideoStorage {
   description: string;
 }
 
-export interface SubscriptionStorage {
+export interface SubscriptionStorageSimple {
   channelId: string;
   channelName: string;
   lastUpdated?: string;
+}
+
+export interface SubscriptionStorage extends SubscriptionStorageSimple {
+  groups?: string;
+  groupsArray: string[];
 }
 
 export interface ChannelGroup {

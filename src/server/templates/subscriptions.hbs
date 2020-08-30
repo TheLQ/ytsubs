@@ -33,7 +33,10 @@
       <ul>
         {{#each subscriptions}}
         <li>
-          <a href="https://www.youtube.com/channel/{{channelId}}">{{channelName}}</a> - {{groups}}
+          <a href="https://www.youtube.com/channel/{{channelId}}">{{channelName}}</a> - 
+          {{#each groupsArray}}
+          {{this}} <a href="/api/removeChannelGroupMap?channelId={{../channelId}}&groupName={{this}}">x</a>,
+          {{/each}}
           <form action="" method="POST">
             <select name="groupName">
               <option value=""></option>
