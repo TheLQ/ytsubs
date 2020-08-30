@@ -18,7 +18,9 @@ export async function getVideos(
   const template: HandlebarsTemplateDelegate = await loadTemplate("videos");
 
   let videosRaw = await context.db.getVideos({
-    limit: 100
+    limit: 100,
+    group: req.query.group as string,
+    channelId: req.query.channelId as string
   });
 
   let videos = videosRaw.map((entry: any) => {
@@ -29,7 +31,8 @@ export async function getVideos(
   res.send(
     template({
       videos,
-      messages
+      messages,
+      groups: await context.db.getChannelGroups()
     })
   );
 }

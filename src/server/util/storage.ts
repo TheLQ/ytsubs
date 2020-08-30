@@ -34,6 +34,7 @@ type DB = Database<sqlite3.Database, sqlite3.Statement>;
 
 type GetVideoOptions = {
   group?: string;
+  channelId?: string;
   limit: number;
 };
 
@@ -152,18 +153,42 @@ export class Storage {
   public async getVideos(
     options: GetVideoOptions
   ): Promise<VideoStorage[] & SubscriptionStorage[]> {
-    const sqlPlaceholders = [];
-    let sql = "SELECT * from videos";
-    if (options.group) {
-      sql += "WHERE subscriptions.group = ?";
-      sqlPlaceholders.push(options.group);
-    }
-    sql +=
-      " INNER JOIN subscriptions ON subscriptions.channelId = videos.channelId" +
-      " ORDER BY datetime(published) DESC" +
-      ` LIMIT ${options.limit}`;
+    let sql = "";
+    try {
+      const sqlPlaceholders: any[] = [];
+      let having = "";
+      let where = "";
 
-    return this.db.all(sql, sqlPlaceholders);
+      if (options.group != undefined) {
+        having = " HAVING groups LIKE ?";
+        sqlPlaceholders.push(`%${options.group}%`);
+      }
+
+      if (options.channelId != undefined) {
+        where = " WHERE videos.channelId = ?";
+        sqlPlaceholders.push(options.channelId);
+      }
+
+      sql = `
+      SELECT 
+        *,
+        group_concat(groupName) as groups
+      FROM videos
+      LEFT JOIN channelGroupMap USING (channelId)
+      LEFT JOIN subscriptions USING (channelId)
+      ${where}
+      GROUP BY videos.videoId
+      ${having}
+      ORDER BY datetime(published) DESC
+      LIMIT ?
+      `;
+      sqlPlaceholders.push(options.limit);
+
+      return await this.db.all(sql, sqlPlaceholders);
+    } catch (e) {
+      const debugOpts = JSON.stringify(options);
+      throw new WrappedError(`Failed to get videos\n${sql}\n${debugOpts}`, e);
+    }
   }
 
   public async addSubscriptions(subscriptions: SubscriptionStorage[]) {

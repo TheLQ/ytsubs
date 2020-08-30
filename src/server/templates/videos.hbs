@@ -11,6 +11,10 @@
     
     <div id="sidebar">
       <ul>
+        <li><a href="/">none</a></li>
+        {{#each groups}}
+        <li><a href="/?group={{groupName}}">{{groupName}}</a></li>
+        {{/each}}
         <li>Hey look</li>
         <li>content!</li>
       </ul>
@@ -31,7 +35,7 @@
             <h3 class="video-title">{{ title }}</h3>
           </a>
           <div class="video-channel-wrapper">
-            <a class="video-channel" href="https://www.youtube.com/channel/{{channelId}}">{{channelName}}</a>
+            <a class="video-channel" href="/?channelId={{channelId}}">{{channelName}}</a>
           </div>
           <div class="video-published">
             {{publishedRelative}}
