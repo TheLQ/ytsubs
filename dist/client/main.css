@@ -1,3 +1,29 @@
+/* global */
+
+form {
+  border: 1px solid;
+}
+
+/* page layout */
+
+#app {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+#sidebar {
+  flex-basis: 10rem;
+  flex-grow: 1;
+}
+
+#content {
+  flex-basis: 0;
+  flex-grow: 999;
+  min-width: 50%;
+}
+
+/* video page */
+
 .video-container {
   display: flex;
   flex-wrap: wrap;
@@ -34,8 +60,4 @@
   outline: none;
   text-decoration: none;
   color: #838383;
-}
-
-form {
-  border: 1px solid;
 }
