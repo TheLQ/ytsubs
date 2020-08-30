@@ -14,13 +14,33 @@
             <label>
                 Upload subscription list from <a href="https://www.youtube.com/subscription_manager?action_takeout=1">Youtube Subscription Manager</a>
                 <input type="file" name="xml">
-                <button name="uploadSubscriptions">Upload Subscriptions</button>
+                <button type="submit" name="uploadSubscriptions">Upload Subscriptions</button>
             </label>
+        </form>
+
+        <form action="" method="POST">
+          <label>
+            Add group
+            <input type="text" name="groupName"/>
+            <button type="submit" name="addGroup">Add Group</button>
+          </label>
         </form>
     </div>
     <ul>
       {{#each subscriptions}}
-      <li><a href="https://www.youtube.com/channel/{{channelId}}">{{channelName}} - {{lastScanned}}</a></li>
+      <li>
+        <a href="https://www.youtube.com/channel/{{channelId}}">{{channelName}} - {{groups}}</a>
+        <form action="" method="POST">
+          <select name="groupName">
+            <option value=""></option>
+            {{#each @root.groups}}
+            <option value="{{groupName}}">{{groupName}}</option>
+            {{/each}}
+          </select>
+          <input type="hidden" name="channelId" value="{{channelId}}"/>
+          <button type="submit" name="addChannelGroup">Add Group</button>
+        </form>
+      </li>
       {{/each}}
     </ul>
   </div>

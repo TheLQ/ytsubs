@@ -5,6 +5,7 @@ import { promiseAllThrow } from "./apputil";
 import { WrappedError } from "./error";
 import util from "util";
 import { Context } from "..";
+import _ from "lodash";
 
 export interface VideoStorage {
   videoId: string;
@@ -20,7 +21,25 @@ export interface SubscriptionStorage {
   lastUpdated?: string;
 }
 
+export interface ChannelGroup {
+  groupName: string;
+}
+
+export interface ChannelGroupMapping {
+  channelId: string;
+  groupName: string;
+}
+
 type DB = Database<sqlite3.Database, sqlite3.Statement>;
+
+type GetVideoOptions = {
+  group?: string;
+  limit: number;
+};
+
+type GetChannelOptions = {
+  notUpdatedIn?: string;
+};
 
 export class Storage {
   public static async create(dbpath: string) {
@@ -28,6 +47,12 @@ export class Storage {
       filename: dbpath,
       driver: sqlite3.Database
     });
+
+    try {
+      await db.run(`PRAGMA foreign_keys = ON`);
+    } catch (e) {
+      throw new WrappedError("Failed to enable foreign keys", e);
+    }
 
     try {
       await db.run(`
@@ -49,11 +74,30 @@ export class Storage {
             "channelName" text not null,
             "lastScanned" varchar(26)
         )`);
-      db.run(
-        'DELETE FROM subscriptions WHERE channelId="UCGib-bLlq8HTRp2YaEESxeg"'
-      );
     } catch (e) {
-      throw new WrappedError("Failed to create videos table", e);
+      throw new WrappedError("Failed to create subscriptions table", e);
+    }
+
+    try {
+      await db.run(`
+        create table if not exists "channelGroup" (
+            "groupName" text not null primary key
+        )`);
+    } catch (e) {
+      throw new WrappedError("Failed to create channelGroup table", e);
+    }
+
+    try {
+      await db.run(`
+        create table if not exists "channelGroupMap" (
+            "channelId" text not null,
+            "groupName" text not null,
+            FOREIGN KEY(groupName) REFERENCES channelGroup(groupName)
+            FOREIGN KEY(channelId) REFERENCES subscriptions(channelId)
+            UNIQUE(channelId, groupName)
+        )`);
+    } catch (e) {
+      throw new WrappedError("Failed to create channelGroupMap table", e);
     }
 
     return new Storage(db);
@@ -101,19 +145,25 @@ export class Storage {
     }
   }
 
-  public async getVideos(): Promise<VideoStorage[]> {
+  public async getVideosOnly(): Promise<VideoStorage[]> {
     return await this.db.all("SELECT * from videos");
   }
 
-  public async getVideosWithChannelName(
-    limit: number
+  public async getVideos(
+    options: GetVideoOptions
   ): Promise<VideoStorage[] & SubscriptionStorage[]> {
-    return await this.db.all(
-      "SELECT * from videos" +
-        " INNER JOIN subscriptions ON subscriptions.channelId = videos.channelId" +
-        " ORDER BY datetime(published) DESC" +
-        ` LIMIT ${limit}`
-    );
+    const sqlPlaceholders = [];
+    let sql = "SELECT * from videos";
+    if (options.group) {
+      sql += "WHERE subscriptions.group = ?";
+      sqlPlaceholders.push(options.group);
+    }
+    sql +=
+      " INNER JOIN subscriptions ON subscriptions.channelId = videos.channelId" +
+      " ORDER BY datetime(published) DESC" +
+      ` LIMIT ${options.limit}`;
+
+    return this.db.all(sql, sqlPlaceholders);
   }
 
   public async addSubscriptions(subscriptions: SubscriptionStorage[]) {
@@ -151,14 +201,40 @@ export class Storage {
     }
   }
 
-  public async getSubscriptions(
-    options?: subscriptionOptions
-  ): Promise<SubscriptionStorage[]> {
-    let query = "SELECT * from subscriptions";
-    if (options?.notUpdatedIn) {
-      query += ` WHERE lastScanned IS NULL or datetime(lastScanned) < datetime('now','${options.notUpdatedIn}')`;
+  public async getSubscriptionsSimple() {
+    let sql: string = "";
+    try {
+      sql = "SELECT * FROM subscriptions";
+      return await this.db.all(sql);
+    } catch (e) {
+      throw new WrappedError(`failed to get subscriptions\n${sql}`, e);
     }
-    return await this.db.all(query);
+  }
+
+  public async getSubscriptions(
+    options?: GetChannelOptions
+  ): Promise<SubscriptionStorage[]> {
+    let sql: string = "";
+    try {
+      let where = "";
+      if (options?.notUpdatedIn) {
+        where += ` WHERE lastScanned IS NULL or datetime(lastScanned) < datetime('now','${options.notUpdatedIn}')`;
+      }
+
+      sql = `
+      SELECT 
+        *,
+        group_concat(groupName) as groups
+      FROM subscriptions
+      LEFT JOIN channelGroupMap USING (channelId)
+      GROUP BY subscriptions.channelId
+      ORDER BY channelName
+      `;
+
+      return await this.db.all(sql);
+    } catch (e) {
+      throw new WrappedError(`failed to get subscriptions\n${sql}`, e);
+    }
   }
 
   public async setSubscriptionsUpdated(
@@ -177,8 +253,87 @@ export class Storage {
       );
     }
   }
-}
 
-type subscriptionOptions = {
-  notUpdatedIn?: string;
-};
+  public async getChannelGroups() {
+    try {
+      return await this.db.all(`SELECT * FROM channelGroup`);
+    } catch (e) {
+      throw new WrappedError("failed to get channel groups", e);
+    }
+  }
+
+  public async addChannelGroups(channelGroups: ChannelGroup[]) {
+    return await this.upsert(
+      channelGroups,
+      (row, result) => {
+        result.push(row.groupName);
+      },
+      // PRIMARY KEY will throw errors on duplicates, which is what we want for now
+      sqlPlaceholders => `INSERT INTO channelgroup (groupName) VALUES (?)`
+    );
+  }
+
+  public async addChannelGroupMapping(groupMapping: ChannelGroupMapping[]) {
+    return await this.upsert(
+      groupMapping,
+      (row, result) => {
+        result.push(row.channelId);
+        result.push(row.groupName);
+      },
+      sqlPlaceholders =>
+        `INSERT INTO channelGroupMap (channelId, groupName) VALUES ${sqlPlaceholders} ON CONFLICT DO NOTHING`
+    );
+  }
+
+  private async upsert<T>(
+    rows: T[],
+    valueMapper: (row: T, result: any[]) => void,
+    query: (sqlPlaceholders: string) => string
+  ) {
+    if (rows.length == 0) {
+      return;
+    }
+    let sql = undefined;
+    // let txActive = false;
+    try {
+      // await this.db.run("begin transaction");
+      // txActive = true;
+
+      const firstRowValues: any[] = [];
+      valueMapper(rows[0], firstRowValues);
+      const placeholder =
+        "(" + _.fill(Array(firstRowValues.length), "?").join(", ") + ")";
+
+      let sqlPlaceholders = placeholder;
+      let sqlValues = firstRowValues;
+      if (rows.length == 1) {
+        sqlPlaceholders = placeholder;
+        sqlValues = firstRowValues;
+      } else {
+        sqlPlaceholders = _.fill(Array(rows.length), placeholder).join(", ");
+
+        let first = true;
+        for (const row of rows) {
+          if (first) {
+            // inited with first row's values
+            first = false;
+            continue;
+          }
+          valueMapper(row, sqlValues);
+        }
+      }
+
+      // upsert syntax
+      sql = query(sqlPlaceholders);
+      await this.db.run(sql, sqlValues);
+
+      // await this.db.run("commit");
+    } catch (e) {
+      // if (txActive) {
+      //   await this.db.run("rollback");
+      // }
+      const input = JSON.stringify(rows, null, 4);
+      throw new WrappedError(`failed to add rows\n${sql}\n${input}`, e);
+    }
+  }
+}

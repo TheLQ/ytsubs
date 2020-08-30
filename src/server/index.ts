@@ -9,6 +9,7 @@ import fs from "fs";
 import { parseSubscriptionsOpml } from "./util/youtube";
 
 const log = logger("server");
+log.info("Starting app");
 
 async function init() {
   try {
@@ -76,7 +77,7 @@ export class Context {
   async init() {
     this.db = await Storage.create("./client/database.sqlite");
 
-    if ((await this.db.getSubscriptions()).length == 0) {
+    if ((await this.db.getSubscriptionsSimple()).length == 0) {
       log.info("first run, loading subscriptions");
       const contentXml = await fs.promises.readFile(
         "client/subscription_manager.xml",

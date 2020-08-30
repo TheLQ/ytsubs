@@ -19,10 +19,14 @@ export async function getSubscription(
   );
 
   const subscriptions = await context.db.getSubscriptions();
+  const groups = await context.db.getChannelGroups();
+
+  log.debug(JSON.stringify(subscriptions));
 
   res.send(
     template({
-      subscriptions
+      subscriptions,
+      groups
     })
   );
 }
@@ -37,6 +41,17 @@ export async function postSubscription(
   if (formData.fields.uploadSubscriptions != undefined) {
     const subs = parseSubscriptionsOpml(formData.memoryFile.toString("utf8"));
     await context.db.addSubscriptions(subs);
+  } else if (formData.fields.addGroup != undefined) {
+    await context.db.addChannelGroups([
+      { groupName: formData.fields.groupName as string }
+    ]);
+  } else if (formData.fields.addChannelGroup != undefined) {
+    await context.db.addChannelGroupMapping([
+      {
+        channelId: formData.fields.channelId as string,
+        groupName: formData.fields.groupName as string
+      }
+    ]);
   } else {
     await doDebugWork(formData.fields);
   }

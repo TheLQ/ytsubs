@@ -35,3 +35,7 @@
   text-decoration: none;
   color: #838383;
 }
+
+form {
+  border: 1px solid;
+}

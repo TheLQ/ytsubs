@@ -17,12 +17,14 @@ export async function getVideos(
 ): Promise<void> {
   const template: HandlebarsTemplateDelegate = await loadTemplate("videos");
 
-  let videos = (await context.db.getVideosWithChannelName(100)).map(
-    (entry: any) => {
-      entry.publishedRelative = moment(entry.published).fromNow();
-      return entry;
-    }
-  );
+  let videosRaw = await context.db.getVideos({
+    limit: 100
+  });
+
+  let videos = videosRaw.map((entry: any) => {
+    entry.publishedRelative = moment(entry.published).fromNow();
+    return entry;
+  });
 
   res.send(
     template({
