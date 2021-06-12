@@ -6,7 +6,7 @@ import { Storage } from "./util/storage";
 import { getSubscription, postSubscription } from "./routes/SubscriptionsRoute";
 import { initHandlebars } from "./templates";
 import fs from "fs";
-import { parseSubscriptionsOpml } from "./util/youtube";
+import { parseSubscriptionsOpml } from "./util/youtubeUtils";
 import { getApi, postApi } from "./routes/ApiRoute";
 
 const log = logger("server");

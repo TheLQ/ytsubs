@@ -1,13 +1,11 @@
 import logger from "./util/logger";
 import { Context } from ".";
-import * as youtube from "./util/youtube";
+import * as youtube from "./util/youtubeUtils";
 import asyncPool from "tiny-async-pool";
 import { WrappedError } from "./util/error";
 import bent from "bent";
 import { GetVideoOptions } from "./util/storage";
 import moment from "moment";
-
-const { StatusError } = bent;
 
 const getUrl = bent("string");
 const log = logger("server/api");
@@ -56,7 +54,7 @@ export async function downloadVideosRSS(context: Context, messages: string[]) {
 export async function downloadSubscriptions(context: Context) {}
 
 export async function checkYoutubeStatus(context: Context) {
-  return youtube.authTest();
+  // return youtube.authTest();
 }
 
 export async function getVideos(context: Context, options: GetVideoOptions) {

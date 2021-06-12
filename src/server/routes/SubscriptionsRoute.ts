@@ -4,7 +4,7 @@ import express from "express";
 import { Context } from "../index";
 import { doDebugWork } from "./DebugRoute";
 import { parseForm } from "../util/apputil";
-import { parseSubscriptionsOpml } from "../util/youtube";
+import { parseSubscriptionsOpml } from "../util/youtubeUtils";
 import * as api from "../api";
 
 const log = logger("server/routes/SubscriptionsRoute");

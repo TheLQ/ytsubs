@@ -44,7 +44,7 @@ export function parseForm(
 ): Promise<FormData> {
   return new Promise((resolve, reject) => {
     const form = new formidable.IncomingForm();
-    form.multiples = true;
+    //form.multiples = true;
 
     // Do not unnecessarily write xml/json to disk, just to read it back and delete
     let memoryFile = Buffer.of();
