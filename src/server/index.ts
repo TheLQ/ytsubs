@@ -7,7 +7,7 @@ import { getSubscription, postSubscription } from "./routes/SubscriptionsRoute";
 import { initHandlebars } from "./templates";
 import fs from "fs";
 import { parseSubscriptionsOpml } from "./util/youtube";
-import { getRemoveChannelGroupMap } from "./routes/ApiRemoveChannelGroupMapRoute";
+import { getApi, postApi } from "./routes/ApiRoute";
 
 const log = logger("server");
 log.info("Starting app");
@@ -30,10 +30,11 @@ async function init() {
     app.get("/subscriptions", prehandle(getSubscription, context));
     app.post("/subscriptions", prehandle(postSubscription, context));
 
-    app.get(
-      "/api/removeChannelGroupMap",
-      prehandle(getRemoveChannelGroupMap, context)
-    );
+    app.get("/subscriptions", prehandle(getSubscription, context));
+    app.post("/subscriptions", prehandle(postSubscription, context));
+
+    app.get("/api/*", prehandle(getApi, context));
+    app.post("/api/*", prehandle(postApi, context));
 
     app.listen(port, () => {
       console.log(`Example app listening at http://localhost:${port}`);

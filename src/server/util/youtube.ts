@@ -9,6 +9,7 @@ import {
   SubscriptionStorageSimple
 } from "./storage";
 import { WrappedError } from "./error";
+import { Credentials } from "google-auth-library";
 
 // Workaround: The requested module 'googleapis' is expected to be of type CommonJS, which does not support named exports.
 const { google } = google_pkg;
@@ -25,20 +26,25 @@ const TOKEN_DIR =
   "/.credentials/";
 const TOKEN_PATH = TOKEN_DIR + "youtube-nodejs-quickstart.json";
 
-export function init(callback: YTCallback) {
-  // Load client secrets from a local file.
-  fs.readFile("client_secret.json", "utf8", function processClientSecrets(
-    err,
-    content
-  ) {
-    if (err) {
-      console.log("Error loading client secret file: " + err);
-      return;
-    }
-    // Authorize a client with the loaded credentials, then call the YouTube API.
-    authorize(JSON.parse(content), callback);
-  });
-}
+const CLIENT_ID =
+  "816720081291-3nbo9llrvja6fia9n8c4qgl8sqbvif13.apps.googleusercontent.com";
+const CLIENT_SECRET = "3i3ER927GXc74glWm4zyXXtc";
+const REDIRECT_URL = "http://dev.xana.sh:3000";
+
+// export function init(callback: YTCallback) {
+//   // Load client secrets from a local file.
+//   fs.readFile("client_secret.json", "utf8", function processClientSecrets(
+//     err,
+//     content
+//   ) {
+//     if (err) {
+//       console.log("Error loading client secret file: " + err);
+//       return;
+//     }
+//     // Authorize a client with the loaded credentials, then call the YouTube API.
+//     authorize(JSON.parse(content), callback);
+//   });
+// }
 
 /**
  * Create an OAuth2 client with the given credentials, and then execute the
@@ -47,11 +53,11 @@ export function init(callback: YTCallback) {
  * @param {Object} credentials The authorization client credentials.
  * @param {function} callback The callback to call with the authorized client.
  */
-function authorize(credentials: any, callback: YTCallback) {
-  const clientSecret = credentials.installed.client_secret;
-  const clientId = credentials.installed.client_id;
-  const redirectUrl = credentials.installed.redirect_uris[0];
-  const oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
+function authorize(credentials: Credentials, callback: YTCallback) {
+  // const clientSecret = credentials.installed.client_secret;
+  // const clientId = credentials.installed.client_id;
+  // const redirectUrl = credentials.installed.redirect_uris[0];
+  const oauth2Client = new OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
 
   // Check if we have previously stored a token.
   fs.readFile(TOKEN_PATH, "utf8", (err, token) => {
@@ -62,6 +68,15 @@ function authorize(credentials: any, callback: YTCallback) {
       callback(oauth2Client);
     }
   });
+}
+
+export function authTest() {
+  const oauth2Client = new OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
+  const authUrl = oauth2Client.generateAuthUrl({
+    access_type: "online",
+    scope: SCOPES
+  });
+  return authUrl;
 }
 
 /**

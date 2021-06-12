@@ -5,7 +5,6 @@ import { Context } from "../index";
 import { doDebugWork } from "./DebugRoute";
 import { parseForm } from "../util/apputil";
 import { parseSubscriptionsOpml } from "../util/youtube";
-import { storage } from "googleapis/build/src/apis/storage";
 import * as api from "../api";
 
 const log = logger("server/routes/SubscriptionsRoute");
@@ -20,7 +19,7 @@ export async function getSubscription(
   const subscriptions = await api.getSubscriptions(context);
   const groups = await context.db.getChannelGroups();
 
-  log.debug(JSON.stringify(subscriptions));
+  // log.debug(JSON.stringify(subscriptions));
 
   res.send(
     template({
@@ -51,6 +50,10 @@ export async function postSubscription(
         groupName: formData.fields.groupName as string
       }
     ]);
+  } else if (formData.fields.syncSubscriptions != undefined) {
+    const url = await api.checkYoutubeStatus(context);
+    res.send(url);
+    return;
   } else {
     await doDebugWork(formData.fields);
   }

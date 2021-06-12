@@ -106,6 +106,17 @@ export class Storage {
       throw new WrappedError("Failed to create channelGroupMap table", e);
     }
 
+    try {
+      await db.run(`
+        create table if not exists "options" (
+            "key" text not null,
+            "value" text not null,
+            UNIQUE(key)
+        )`);
+    } catch (e) {
+      throw new WrappedError("Failed to create options table", e);
+    }
+
     return new Storage(db);
   }
 
@@ -292,7 +303,7 @@ export class Storage {
     }
   }
 
-  public async addChannelGroups(channelGroups: ChannelGroup[]) {
+  public async addChannelGroups(channelGroups: ChannelGroup[]): Promise<void> {
     return await this.upsert(
       channelGroups,
       (row, result) => {
@@ -303,7 +314,9 @@ export class Storage {
     );
   }
 
-  public async addChannelGroupMapping(groupMappings: ChannelGroupMapping[]) {
+  public async addChannelGroupMapping(
+    groupMappings: ChannelGroupMapping[]
+  ): Promise<void> {
     return await this.upsert(
       groupMappings,
       (row, result) => {
@@ -315,7 +328,9 @@ export class Storage {
     );
   }
 
-  public async removeChannelGroupMapping(groupMappings: ChannelGroupMapping[]) {
+  public async removeChannelGroupMapping(
+    groupMappings: ChannelGroupMapping[]
+  ): Promise<void> {
     // no real easy way to do batching
     for (const groupMapping of groupMappings) {
       await this.db.run(
@@ -325,11 +340,34 @@ export class Storage {
     }
   }
 
+  public async getOption(key: string): Promise<string | null> {
+    const result = await this.db.all(
+      "SELECT value FROM options WHERE key = ?",
+      [key]
+    );
+    if (result.length == 0) {
+      return null;
+    } else if (result.length > 1) {
+      throw new Error("Found multiple keys?");
+    }
+    return result[0].value;
+  }
+
+  public async setOption(key: string, value: string): Promise<void> {
+    return await this.upsert(
+      [null],
+      (row, result) => {
+        result.push(key, value);
+      },
+      sqlPlaceholders => `INSERT INTO options (key, value) VALUES (?, ?)`
+    );
+  }
+
   private async upsert<T>(
     rows: T[],
     valueMapper: (row: T, result: any[]) => void,
     query: (sqlPlaceholders: string) => string
-  ) {
+  ): Promise<void> {
     if (rows.length == 0) {
       return;
     }

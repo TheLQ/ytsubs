@@ -37,7 +37,7 @@ export async function postVideos(
   const messages: string[] = [];
 
   if (formData.fields.downloadFeeds != undefined) {
-    await api.downloadFeeds(context, messages);
+    await api.downloadVideosRSS(context, messages);
   } else {
     await doDebugWork(formData.fields);
   }

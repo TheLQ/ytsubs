@@ -12,7 +12,12 @@ const { StatusError } = bent;
 const getUrl = bent("string");
 const log = logger("server/api");
 
-export async function downloadFeeds(context: Context, messages: string[]) {
+/**
+ * Download latest videos via RSS feeds
+ * @param context
+ * @param messages
+ */
+export async function downloadVideosRSS(context: Context, messages: string[]) {
   messages.push("imported videos");
   const channels = await context.db.getSubscriptions({
     notUpdatedIn: "-5 hours"
@@ -46,6 +51,12 @@ export async function downloadFeeds(context: Context, messages: string[]) {
       );
     }
   });
+}
+
+export async function downloadSubscriptions(context: Context) {}
+
+export async function checkYoutubeStatus(context: Context) {
+  return youtube.authTest();
 }
 
 export async function getVideos(context: Context, options: GetVideoOptions) {
