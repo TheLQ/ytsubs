@@ -20,7 +20,7 @@ export function initView() {
         signedIn: false
       }
     },
-    el: "#app",
+    el: "#vueapp",
     render: h => h(App)
   });
 
