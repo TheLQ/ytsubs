@@ -36,8 +36,9 @@ async function init() {
     app.get("/api/*", prehandle(getApi, context));
     app.post("/api/*", prehandle(postApi, context));
 
-    app.listen(port, () => {
-      console.log(`Example app listening at http://localhost:${port}`);
+    let bindAddress = (process.env.USER == "dev") ? "0.0.0.0" : "127.0.0.1"
+    app.listen(port, bindAddress, () => {
+      console.log(`Example app listening at http://${bindAddress}:${port}`);
     });
   } catch (e) {
     error.fatalError(e, "failed to init");

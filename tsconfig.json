@@ -9,7 +9,7 @@
 
     "moduleResolution": "node",
 
-    "outDir": "./dist/serverts",
+    "outDir": "./dist/server",
     "sourceMap": true,
     "noImplicitAny": true,
 

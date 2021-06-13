@@ -1,2 +1,4 @@
 rsync -av src dist package.json package-lock.json leon@ytsubs.xana.sh:/opt/ytsubs
+
+rsync -av dist leon@ytsubs.xana.sh:/opt/ytsubs
 rsync -av src client leon@ytsubs.xana.sh:/opt/ytsubs
