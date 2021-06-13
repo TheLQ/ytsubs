@@ -9,3 +9,6 @@ dist/**/*.cjs.map
 
 /client/
 yarn-error.log
+
+.idea
+.vscode
