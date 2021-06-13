@@ -7,7 +7,7 @@ export async function getApi(
   res: express.Response,
   context: Context
 ) {
-  if (req.path == "/api/youtube/status") {
+  if (req.path === "/api/youtube/status") {
     const result = await api.checkYoutubeStatus(context);
     res.send(result);
   } else {
@@ -21,9 +21,6 @@ export async function postApi(
   res: express.Response,
   context: Context
 ) {
-  if (false) {
-  } else {
-    res.statusCode = 400;
-    res.send("Unknown POST " + req.path);
-  }
+  res.statusCode = 400;
+  res.send("Unknown POST " + req.path);
 }

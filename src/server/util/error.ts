@@ -20,8 +20,7 @@ export function prettyError(err: any): string {
   if (err instanceof WrappedError) {
     message = err.toString();
   } else if (err.stack) {
-    const stack = err.stack as string;
-    message = stack;
+    message = err.stack as string;
   } else {
     message = JSON.stringify(err) + " (error has no stack)";
   }
@@ -46,7 +45,7 @@ export class WrappedError extends Error {
 
   public toString(): string {
     const causedByMessage = this.causedBy
-      .map(entry => {
+      .map((entry) => {
         if (entry instanceof WrappedError) {
           return "->  " + entry.toString().replace(/\r?\n/g, "\n    ");
         } else if (entry.stack) {

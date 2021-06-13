@@ -1,18 +1,12 @@
 import fs from "fs";
-import google_pkg from "googleapis";
-import { OAuth2Client } from "googleapis-common";
-import readline from "readline";
-import parseXml from "@rgrove/parse-xml";
-import {
-  SubscriptionStorage,
-  VideoStorage,
-  SubscriptionStorageSimple
-} from "../server/util/storage";
 
-import { Credentials } from "google-auth-library";
+import {Credentials} from "google-auth-library";
+import google_pkg from "googleapis";
+import {OAuth2Client} from "googleapis-common";
+import readline from "readline";
 
 // Workaround: The requested module 'googleapis' is expected to be of type CommonJS, which does not support named exports.
-const { google } = google_pkg;
+const {google} = google_pkg;
 
 type YTCallback = (auth: OAuth2Client) => void;
 
@@ -22,12 +16,12 @@ const OAuth2 = google.auth.OAuth2;
 // at ~/.credentials/youtube-nodejs-quickstart.json
 const SCOPES = ["https://www.googleapis.com/auth/youtube.readonly"];
 const TOKEN_DIR =
-  (process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE) +
-  "/.credentials/";
+    (process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE) +
+    "/.credentials/";
 const TOKEN_PATH = TOKEN_DIR + "youtube-nodejs-quickstart.json";
 
 const CLIENT_ID =
-  "816720081291-3nbo9llrvja6fia9n8c4qgl8sqbvif13.apps.googleusercontent.com";
+    "816720081291-3nbo9llrvja6fia9n8c4qgl8sqbvif13.apps.googleusercontent.com";
 const CLIENT_SECRET = "3i3ER927GXc74glWm4zyXXtc";
 const REDIRECT_URL = "http://dev.xana.sh:3000";
 
@@ -54,29 +48,29 @@ const REDIRECT_URL = "http://dev.xana.sh:3000";
  * @param {function} callback The callback to call with the authorized client.
  */
 function authorize(credentials: Credentials, callback: YTCallback) {
-  // const clientSecret = credentials.installed.client_secret;
-  // const clientId = credentials.installed.client_id;
-  // const redirectUrl = credentials.installed.redirect_uris[0];
-  const oauth2Client = new OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
+    // const clientSecret = credentials.installed.client_secret;
+    // const clientId = credentials.installed.client_id;
+    // const redirectUrl = credentials.installed.redirect_uris[0];
+    const oauth2Client = new OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
 
-  // Check if we have previously stored a token.
-  fs.readFile(TOKEN_PATH, "utf8", (err, token) => {
-    if (err) {
-      getNewToken(oauth2Client, callback);
-    } else {
-      oauth2Client.credentials = JSON.parse(token);
-      callback(oauth2Client);
-    }
-  });
+    // Check if we have previously stored a token.
+    fs.readFile(TOKEN_PATH, "utf8", (err, token) => {
+        if (err) {
+            getNewToken(oauth2Client, callback);
+        } else {
+            oauth2Client.credentials = JSON.parse(token);
+            callback(oauth2Client);
+        }
+    });
 }
 
 export function authTest() {
-  const oauth2Client = new OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
-  const authUrl = oauth2Client.generateAuthUrl({
-    access_type: "online",
-    scope: SCOPES
-  });
-  return authUrl;
+    const oauth2Client = new OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
+    const authUrl = oauth2Client.generateAuthUrl({
+        access_type: "online",
+        scope: SCOPES
+    });
+    return authUrl;
 }
 
 /**
@@ -88,27 +82,27 @@ export function authTest() {
  *     client.
  */
 function getNewToken(oauth2Client: OAuth2Client, callback: YTCallback) {
-  const authUrl = oauth2Client.generateAuthUrl({
-    access_type: "offline",
-    scope: SCOPES
-  });
-  console.log("Authorize this app by visiting this url: ", authUrl);
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
-  rl.question("Enter the code from that page here: ", code => {
-    rl.close();
-    oauth2Client.getToken(code, (err, token) => {
-      if (err || token == null) {
-        console.log("Error while trying to retrieve access token", err);
-        return;
-      }
-      oauth2Client.credentials = token;
-      storeToken(token);
-      callback(oauth2Client);
+    const authUrl = oauth2Client.generateAuthUrl({
+        access_type: "offline",
+        scope: SCOPES
     });
-  });
+    console.log("Authorize this app by visiting this url: ", authUrl);
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+    rl.question("Enter the code from that page here: ", code => {
+        rl.close();
+        oauth2Client.getToken(code, (err, token) => {
+            if (err || token == null) {
+                console.log("Error while trying to retrieve access token", err);
+                return;
+            }
+            oauth2Client.credentials = token;
+            storeToken(token);
+            callback(oauth2Client);
+        });
+    });
 }
 
 /**
@@ -117,20 +111,20 @@ function getNewToken(oauth2Client: OAuth2Client, callback: YTCallback) {
  * @param {Object} token The token to store to disk.
  */
 function storeToken(token: any) {
-  try {
-    fs.mkdirSync(TOKEN_DIR);
-  } catch (err) {
-    if (err.code !== "EEXIST") {
-      throw err;
+    try {
+        fs.mkdirSync(TOKEN_DIR);
+    } catch (err) {
+        if (err.code !== "EEXIST") {
+            throw err;
+        }
     }
-  }
-  fs.writeFile(TOKEN_PATH, JSON.stringify(token), err => {
-    if (err) {
-      throw err;
-    }
+    fs.writeFile(TOKEN_PATH, JSON.stringify(token), err => {
+        if (err) {
+            throw err;
+        }
+        console.log("Token stored to " + TOKEN_PATH);
+    });
     console.log("Token stored to " + TOKEN_PATH);
-  });
-  console.log("Token stored to " + TOKEN_PATH);
 }
 
 /**
@@ -139,32 +133,32 @@ function storeToken(token: any) {
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
 export function getChannel(auth: OAuth2Client) {
-  const service = google.youtube("v3");
-  service.channels.list(
-    {
-      auth,
-      forUsername: "GoogleDevelopers",
-      part: "snippet,contentDetails,statistics"
-    },
-    (err, response) => {
-      if (err || response == null) {
-        console.log("The API returned an error: " + err);
-        return;
-      }
-      const channels = response.data.items;
-      if (channels === undefined || channels.length === 0) {
-        console.log("No channel found.");
-      } else {
-        console.log(
-          "This channel's ID is %s. Its title is '%s', and " +
-            "it has %s views.",
-          channels[0].id,
-          channels[0].snippet?.title,
-          channels[0].statistics?.viewCount
-        );
-      }
-    }
-  );
+    const service = google.youtube("v3");
+    service.channels.list(
+        {
+            auth,
+            forUsername: "GoogleDevelopers",
+            part: "snippet,contentDetails,statistics"
+        },
+        (err, response) => {
+            if (err || response == null) {
+                console.log("The API returned an error: " + err);
+                return;
+            }
+            const channels = response.data.items;
+            if (channels === undefined || channels.length === 0) {
+                console.log("No channel found.");
+            } else {
+                console.log(
+                    "This channel's ID is %s. Its title is '%s', and " +
+                    "it has %s views.",
+                    channels[0].id,
+                    channels[0].snippet?.title,
+                    channels[0].statistics?.viewCount
+                );
+            }
+        }
+    );
 }
 
 

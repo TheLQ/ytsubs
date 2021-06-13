@@ -1,11 +1,11 @@
-import logger from "../util/logger";
-import { loadTemplate } from "../templates";
 import express from "express";
-import { Context } from "../index";
-import { parseForm } from "../util/apputil";
-import { doDebugWork } from "./DebugRoute";
 import * as api from "../api";
+import { Context } from "../index";
+import { loadTemplate } from "../templates";
+import { parseForm } from "../util/apputil";
+import logger from "../util/logger";
 import { GetVideoOptions } from "../util/storage";
+import { doDebugWork } from "./DebugRoute";
 
 const log = logger("server/routes/VideoRoute");
 
@@ -21,9 +21,9 @@ export async function getVideos(
 
   res.send(
     template({
-      videos,
+      groups: await context.db.getChannelGroups(),
       messages,
-      groups: await context.db.getChannelGroups()
+      videos,
     })
   );
 }
@@ -36,7 +36,7 @@ export async function postVideos(
   const formData = await parseForm(req);
   const messages: string[] = [];
 
-  if (formData.fields.downloadFeeds != undefined) {
+  if (formData.fields.downloadFeeds !== undefined) {
     await api.downloadVideosRSS(context, messages);
   } else {
     await doDebugWork(formData.fields);

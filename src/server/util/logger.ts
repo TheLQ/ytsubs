@@ -1,5 +1,5 @@
-import winston from "winston";
 import tripleBeam from "triple-beam";
+import winston from "winston";
 
 export default function getLogger(filename: string): winston.Logger {
   // validate filename avoiding copy paste errors
@@ -16,7 +16,7 @@ export default function getLogger(filename: string): winston.Logger {
     let lastCallSite: string = stack.stack.split("\n")[1];
 
     // filename is between ()
-    if (lastCallSite.indexOf("(") != -1 && lastCallSite.indexOf(")")) {
+    if (lastCallSite.indexOf("(") !== -1 && lastCallSite.indexOf(")")) {
       lastCallSite = lastCallSite.substr(lastCallSite.indexOf("(") + 1);
       lastCallSite = lastCallSite.substr(0, lastCallSite.lastIndexOf(")") - 1);
     }
@@ -28,12 +28,12 @@ export default function getLogger(filename: string): winston.Logger {
     // remove root dir (assume file:// url)
     let rootName = "/dist/";
     let rootPos = lastCallSite.lastIndexOf(rootName);
-    if (rootPos == -1) {
+    if (rootPos === -1) {
       // using sourceMaps
       rootName = "/src/";
       rootPos = lastCallSite.lastIndexOf(rootName);
     }
-    if (rootPos == -1) {
+    if (rootPos === -1) {
       throw new Error(`Can't find root dir in ${lastCallSite}`);
     }
     lastCallSite = lastCallSite.substr(rootPos + rootName.length);
@@ -46,7 +46,7 @@ export default function getLogger(filename: string): winston.Logger {
       lastCallSite = lastCallSite.substr(0, lastCallSite.indexOf("/index"));
     }
 
-    if (filename != lastCallSite) {
+    if (filename !== lastCallSite) {
       throw new Error("expected filename " + lastCallSite + " got " + filename);
     }
   }
@@ -66,12 +66,12 @@ export default function getLogger(filename: string): winston.Logger {
       winston.format.cli(),
       winston.format((info, opts) => {
         // TS Workaround: Type 'unique symbol' cannot be used as an index
-        info[tripleBeam.MESSAGE as any] = `${info["timestamp"]} ${filename} ${
+        info[tripleBeam.MESSAGE as any] = `${info.timestamp} ${filename} ${
           info[tripleBeam.MESSAGE as any]
         }`;
         return info;
       })()
     ),
-    transports: [new winston.transports.Console({ level: "silly" })]
+    transports: [new winston.transports.Console({ level: "silly" })],
   });
 }

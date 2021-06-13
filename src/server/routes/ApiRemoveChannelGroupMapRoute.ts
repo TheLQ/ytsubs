@@ -1,5 +1,5 @@
-import { Context } from "../index";
 import express from "express";
+import { Context } from "../index";
 
 export async function getRemoveChannelGroupMap(
   req: express.Request,
@@ -9,12 +9,12 @@ export async function getRemoveChannelGroupMap(
   await context.db.removeChannelGroupMapping([
     {
       channelId: req.query.channelId as string,
-      groupName: req.query.groupName as string
-    }
+      groupName: req.query.groupName as string,
+    },
   ]);
 
   const referer = req.get("Referer");
-  if (referer != undefined) {
+  if (referer !== undefined) {
     res.setHeader("Location", referer);
   }
   res.send("success");

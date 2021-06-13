@@ -6,7 +6,8 @@
     "no-console": false,
     /* conflicts with Prettier code formatter */
     "arrow-parens": false,
-    "trailing-comma": false
+    "trailing-comma": false,
+    "interface-name": [true, "never-prefix"]
   },
   "rulesDirectory": []
 }

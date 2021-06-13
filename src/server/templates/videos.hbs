@@ -2,48 +2,49 @@
 <html>
 
 <head>
-  {{> partialHead}}
+    {{> partialHead}}
 </head>
 
 <body>
-  {{> partialBodyStart}}
-  <div id="app">
-    
+{{> partialBodyStart}}
+<div id="app">
+
     <div id="sidebar">
-      <ul>
-        <li><a href="/">none</a></li>
-        {{#each groups}}
-        <li><a href="/?group={{groupName}}">{{groupName}}</a></li>
-        {{/each}}
-        <li>Hey look</li>
-        <li>content!</li>
-      </ul>
+        <ul>
+            <li><a href="/">none</a></li>
+            {{#each groups}}
+                <li><a href="/?group={{groupName}}">{{groupName}}</a></li>
+            {{/each}}
+            <li>Hey look</li>
+            <li>content!</li>
+        </ul>
     </div>
     <div id="content">
-      <h1>Videos</h1>
-      <div class="subscription-box">
-        <form action="" method="POST" enctype="multipart/form-data">
-          <button name="downloadFeeds">Download channel feeds</button>
-        </form>
-      </div>
-
-      <div class="video-container">
-        {{#each videos}}
-        <div class="video-box">
-          <a class="video-link" href="https://www.youtube.com/watch?v={{videoId}}">
-            <img src="https://i4.ytimg.com/vi/{{videoId}}/mqdefault.jpg" />
-            <h3 class="video-title">{{ title }}</h3>
-          </a>
-          <div class="video-channel-wrapper">
-            <a class="video-channel" href="/?channelId={{channelId}}">{{channelName}}</a>
-          </div>
-          <div class="video-published">
-            {{publishedRelative}}
-          </div>
+        <h1>Videos</h1>
+        <div class="subscription-box">
+            <form action="" method="POST" enctype="multipart/form-data">
+                <button name="downloadFeeds">Download channel feeds</button>
+            </form>
         </div>
-        {{/each}}
-      </div>
+
+        <div class="video-container">
+            {{#each videos}}
+                <div class="video-box">
+                    <a class="video-link" href="https://www.youtube.com/watch?v={{videoId}}">
+                    <img src="https://i4.ytimg.com/vi/{{videoId}}/mqdefault.jpg"/>
+                    <h3 class="video-title">{{ title }}</h3>
+                    </a>
+                    <div class="video-channel-wrapper">
+                        <a class="video-channel" href="/?channelId={{channelId}}">{{channelName}}</a>
+                    </div>
+                    <div class="video-published">
+                        {{publishedRelative}}
+                    </div>
+                </div>
+            {{/each}}
+        </div>
     </div>
+</div>
 </body>
 
 </html>

@@ -1,11 +1,8 @@
-import sqlite3 from "sqlite3";
-import { open, Database } from "sqlite";
-import { ISqlite } from "sqlite/build/interfaces";
-import { promiseAllThrow } from "./apputil";
-import { WrappedError } from "./error";
-import util from "util";
-import { Context } from "..";
 import _ from "lodash";
+import { Database, open } from "sqlite";
+import { ISqlite } from "sqlite/build/interfaces";
+import sqlite3 from "sqlite3";
+import { WrappedError } from "./error";
 
 export interface VideoStorage {
   videoId: string;
@@ -35,23 +32,23 @@ export interface ChannelGroupMapping {
   groupName: string;
 }
 
-type DB = Database<sqlite3.Database, sqlite3.Statement>;
+type DB = Database;
 
-export type GetVideoOptions = {
+export interface GetVideoOptions {
   group?: string;
   channelId?: string;
   limit?: number;
-};
+}
 
-type GetChannelOptions = {
+interface GetChannelOptions {
   notUpdatedIn?: string;
-};
+}
 
 export class Storage {
   public static async create(dbpath: string) {
     const db = await open({
+      driver: sqlite3.Database,
       filename: dbpath,
-      driver: sqlite3.Database
     });
 
     try {
@@ -127,16 +124,18 @@ export class Storage {
   }
 
   public async addVideos(videos: VideoStorage[]) {
-    if (videos.length == 0) {
+    if (videos.length === 0) {
       return;
     }
-    let sql = undefined;
+    let sql = null;
     // let txActive = false;
     try {
       // await this.db.run("begin transaction");
       // txActive = true;
 
-      const sqlPlaceholders = videos.map(entry => "(?, ?, ?, ?, ?)").join(", ");
+      const sqlPlaceholders = videos
+        .map((entry) => "(?, ?, ?, ?, ?)")
+        .join(", ");
       const sqlValues = [];
       for (const video of videos) {
         sqlValues.push(video.videoId);
@@ -175,18 +174,18 @@ export class Storage {
       let having = "";
       let where = "";
 
-      if (options.group != undefined) {
+      if (options.group !== undefined) {
         having = " HAVING groups LIKE ?";
         sqlPlaceholders.push(`%${options.group}%`);
       }
 
-      if (options.channelId != undefined) {
+      if (options.channelId !== undefined) {
         where = " WHERE videos.channelId = ?";
         sqlPlaceholders.push(options.channelId);
       }
 
       sql = `
-      SELECT 
+      SELECT
         *,
         group_concat(groupName) as groups
       FROM videos
@@ -208,16 +207,16 @@ export class Storage {
   }
 
   public async addSubscriptions(subscriptions: SubscriptionStorageSimple[]) {
-    if (subscriptions.length == 0) {
+    if (subscriptions.length === 0) {
       return;
     }
-    let sql = undefined;
+    let sql = null;
     // let txActive = false;
     try {
       // await this.db.run("begin transaction");
       // txActive = true;
 
-      const sqlPlaceholders = subscriptions.map(entry => "(?, ?)").join(", ");
+      const sqlPlaceholders = subscriptions.map((entry) => "(?, ?)").join(", ");
       const sqlValues = [];
       for (const subscription of subscriptions) {
         sqlValues.push(subscription.channelId);
@@ -263,7 +262,7 @@ export class Storage {
       }
 
       sql = `
-      SELECT 
+      SELECT
         *,
         group_concat(groupName) as groups
       FROM subscriptions
@@ -280,9 +279,9 @@ export class Storage {
 
   public async setSubscriptionsUpdated(
     channelIds: string[]
-  ): Promise<ISqlite.RunResult<sqlite3.Statement>> {
+  ): Promise<ISqlite.RunResult> {
     try {
-      const sqlPlaceholders = channelIds.map(entry => "?").join(",");
+      const sqlPlaceholders = channelIds.map((entry) => "?").join(",");
       return await this.db.run(
         `UPDATE subscriptions SET lastScanned=datetime('now') WHERE channelId IN (${sqlPlaceholders})`,
         channelIds
@@ -310,7 +309,7 @@ export class Storage {
         result.push(row.groupName);
       },
       // PRIMARY KEY will throw errors on duplicates, which is what we want for now
-      sqlPlaceholders => `INSERT INTO channelgroup (groupName) VALUES (?)`
+      (sqlPlaceholders) => `INSERT INTO channelgroup (groupName) VALUES (?)`
     );
   }
 
@@ -323,7 +322,7 @@ export class Storage {
         result.push(row.channelId);
         result.push(row.groupName);
       },
-      sqlPlaceholders =>
+      (sqlPlaceholders) =>
         `INSERT INTO channelGroupMap (channelId, groupName) VALUES ${sqlPlaceholders} ON CONFLICT DO NOTHING`
     );
   }
@@ -345,7 +344,7 @@ export class Storage {
       "SELECT value FROM options WHERE key = ?",
       [key]
     );
-    if (result.length == 0) {
+    if (result.length === 0) {
       return null;
     } else if (result.length > 1) {
       throw new Error("Found multiple keys?");
@@ -359,7 +358,7 @@ export class Storage {
       (row, result) => {
         result.push(key, value);
       },
-      sqlPlaceholders => `INSERT INTO options (key, value) VALUES (?, ?)`
+      (sqlPlaceholders) => `INSERT INTO options (key, value) VALUES (?, ?)`
     );
   }
 
@@ -368,10 +367,10 @@ export class Storage {
     valueMapper: (row: T, result: any[]) => void,
     query: (sqlPlaceholders: string) => string
   ): Promise<void> {
-    if (rows.length == 0) {
+    if (rows.length === 0) {
       return;
     }
-    let sql = undefined;
+    let sql = null;
     // let txActive = false;
     try {
       // await this.db.run("begin transaction");
@@ -384,7 +383,7 @@ export class Storage {
 
       let sqlPlaceholders = placeholder;
       let sqlValues = firstRowValues;
-      if (rows.length == 1) {
+      if (rows.length === 1) {
         sqlPlaceholders = placeholder;
         sqlValues = firstRowValues;
       } else {

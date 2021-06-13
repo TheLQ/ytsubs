@@ -1,11 +1,11 @@
-import logger from "../util/logger";
-import { loadTemplate } from "../templates";
 import express from "express";
-import { Context } from "../index";
-import { doDebugWork } from "./DebugRoute";
-import { parseForm } from "../util/apputil";
-import { parseSubscriptionsOpml } from "../util/youtubeUtils";
 import * as api from "../api";
+import { Context } from "../index";
+import { loadTemplate } from "../templates";
+import { parseForm } from "../util/apputil";
+import logger from "../util/logger";
+import { parseSubscriptionsOpml } from "../util/youtubeUtils";
+import { doDebugWork } from "./DebugRoute";
 
 const log = logger("server/routes/SubscriptionsRoute");
 
@@ -23,8 +23,8 @@ export async function getSubscription(
 
   res.send(
     template({
+      groups,
       subscriptions,
-      groups
     })
   );
 }
@@ -36,21 +36,21 @@ export async function postSubscription(
 ) {
   const formData = await parseForm(req);
 
-  if (formData.fields.uploadSubscriptions != undefined) {
+  if (formData.fields.uploadSubscriptions !== undefined) {
     const subs = parseSubscriptionsOpml(formData.memoryFile.toString("utf8"));
     await context.db.addSubscriptions(subs);
-  } else if (formData.fields.addGroup != undefined) {
+  } else if (formData.fields.addGroup !== undefined) {
     await context.db.addChannelGroups([
-      { groupName: formData.fields.groupName as string }
+      { groupName: formData.fields.groupName as string },
     ]);
-  } else if (formData.fields.addChannelGroup != undefined) {
+  } else if (formData.fields.addChannelGroup !== undefined) {
     await context.db.addChannelGroupMapping([
       {
         channelId: formData.fields.channelId as string,
-        groupName: formData.fields.groupName as string
-      }
+        groupName: formData.fields.groupName as string,
+      },
     ]);
-  } else if (formData.fields.syncSubscriptions != undefined) {
+  } else if (formData.fields.syncSubscriptions !== undefined) {
     const url = await api.checkYoutubeStatus(context);
     res.send(url);
     return;
