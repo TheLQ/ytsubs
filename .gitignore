@@ -1,14 +1,14 @@
-node_modules/
-cache_feed/
+server/node_modules/
+server/cache_feed/
+server/client
 test.js
 
-dist/**/*.js
-dist/**/*.js.map
-dist/**/*.cjs
-dist/**/*.cjs.map
+server/dist/**/*.js
+server/dist/**/*.js.map
+server/dist/**/*.cjs
+server/dist/**/*.cjs.map
 
-/client/
-yarn-error.log
+client/node_modules/
 
 .idea
 .vscode
