@@ -9,7 +9,7 @@
 {{> partialBodyStart}}
 <div id="app">
     <div id="sidebar">
-        <form action="" method="POST" enctype="multipart/form-data">
+        <form action="/api/youtube/subscriptions" method="POST" enctype="multipart/form-data">
             <label>
                 Upload subscription list from
                 <a href="https://www.youtube.com/subscription_manager?action_takeout=1">
@@ -32,7 +32,7 @@
             </label>
         </form>
 
-        <form action="" method="POST">
+        <form action="/api/group/add" ajaxmethod="POST" class="ajaxform">
             <label>
                 Add group
                 <input type="text" name="groupName"/>
@@ -40,7 +40,7 @@
             </label>
         </form>
 
-        <form action="" method="POST">
+        <form action="/api/group/color" ajaxmethod="POST" class="ajaxform">
             <select name="groupName">
                 <option value=""></option>
                 {{#each @root.groups}}
@@ -58,15 +58,17 @@
                 <li>
                     <a href="https://www.youtube.com/channel/{{channelId}}">{{channelName}}</a> -
                     {{#each groupsInfo}}
-                        <span style="background-color: #{{color}};">
+                        <div class="channel-tag" style="background-color: #{{color}};">
                             {{groupName}} 
-                            <a href="/api/removeChannelGroupMap?channelId={{../channelId}}&groupName={{groupName}}">
-                                x
-                            </a>
-                        </span>
+                            <form action="/api/group/channel" ajaxmethod="DELETE" class="ajaxform">
+                                <input type="hidden" name="channelId" value="{{../channelId}}"/>
+                                <input type="hidden" name="groupName" value="{{groupName}}"/>
+                                <button type="submit" name="submit">x</button>
+                            </form>
+                        </div>
                         ,
                     {{/each}}
-                    <form action="" method="POST" class="ajaxform">
+                    <form action="/api/group/channel" ajaxmethod="POST" class="ajaxform">
                         <select name="groupName">
                             <option value=""></option>
                             {{#each @root.groups}}

@@ -61,3 +61,13 @@ form {
   text-decoration: none;
   color: #838383;
 }
+
+/* subscriptions */
+
+.channel-tag {
+  display: inline;
+}
+
+.channel-tag form {
+  display: inline;
+}

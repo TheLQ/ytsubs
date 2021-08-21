@@ -4,6 +4,13 @@ function onload() {
   for (const formElem of document.getElementsByClassName("ajaxform")) {
     console.log("parsing ", formElem)
 
+    let apiPath = formElem.getAttribute("action")
+    if (apiPath == "") {
+      apiPath = window.location
+    }
+
+    let apiMethod = formElem.getAttribute("ajaxmethod")
+
     formElem.addEventListener("submit", (e) => {
       console.log("intercepted form")
 
@@ -16,8 +23,8 @@ function onload() {
       //   console.log("e", e)
       // }
       fd.set(formElem.querySelector("button[type='submit']").getAttribute("name"), "")
-      fetch(window.location, {
-        method: 'POST',
+      fetch(apiPath, {
+        method: apiMethod,
         body: fd
       })
       .then(result => {

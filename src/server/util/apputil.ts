@@ -80,3 +80,17 @@ export function findOrFail<T>(arr: Array<T>, predicate: (entry: T) => boolean): 
   }
   return res;
 }
+
+export function stringSort(a: string, b: string) {
+  const nameA = a.toUpperCase();
+  const nameB = b.toUpperCase();
+
+  // Because yes Javascript this makes sense
+  if (nameA < nameB) {
+    return -1;
+  }
+  if (nameA > nameB) {
+    return 1;
+  }
+  return 0;
+}

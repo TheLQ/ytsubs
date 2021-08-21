@@ -1,7 +1,7 @@
 import express from "express";
 import fs from "fs";
-import { getRemoveChannelGroupMap } from "./routes/ApiRemoveChannelGroupMapRoute";
-import { getApi, postApi } from "./routes/ApiRoute";
+import { deleteApiGroupChannel, postApiGroupAdd, postApiGroupChannel, postApiGroupColor } from "./routes/ApiGroupRoute";
+import { postYoutubeSubscriptions } from "./routes/ApiYoutubeRoute";
 import { getSubscription, postSubscription } from "./routes/SubscriptionsRoute";
 import { getVideos, postVideos } from "./routes/VideoRoute";
 import { initHandlebars } from "./templates";
@@ -34,10 +34,12 @@ async function init() {
     app.get("/subscriptions", prehandle(getSubscription, context));
     app.post("/subscriptions", prehandle(postSubscription, context));
 
-    app.get("/api/removeChannelGroupMap", prehandle(getRemoveChannelGroupMap, context));
+    app.post("/api/group/add", prehandle(postApiGroupAdd, context));
+    app.post("/api/group/color", prehandle(postApiGroupColor, context));
+    app.post("/api/group/channel", prehandle(postApiGroupChannel, context));
+    app.delete("/api/group/channel", prehandle(deleteApiGroupChannel, context));
 
-    app.get("/api/*", prehandle(getApi, context));
-    app.post("/api/*", prehandle(postApi, context));
+    app.post("/api/youtube/subscriptions", prehandle(postYoutubeSubscriptions, context))
 
     const bindAddress = process.env.USER === "dev" ? "0.0.0.0" : "127.0.0.1";
     app.listen(port, bindAddress, () => {
@@ -67,7 +69,7 @@ export function prehandle(callback: UwsCallback, context: Context) {
     req: express.Request,
     res: express.Response
   ): Promise<void> {
-    log.http(`-- ${req.url}`);
+    log.http(`-- ${req.method} ${req.url}`);
     try {
       const result = callback(req, res, context);
       if (result instanceof Promise) {
