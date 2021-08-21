@@ -50,6 +50,8 @@ export async function postSubscription(
         groupName: formData.fields.groupName as string,
       },
     ]);
+    res.send("added group to channel")
+    return
   } else if (formData.fields.syncSubscriptions !== undefined) {
     const url = await api.checkYoutubeStatus(context);
     res.send(url);

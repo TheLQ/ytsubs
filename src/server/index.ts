@@ -1,5 +1,6 @@
 import express from "express";
 import fs from "fs";
+import { getRemoveChannelGroupMap } from "./routes/ApiRemoveChannelGroupMapRoute";
 import { getApi, postApi } from "./routes/ApiRoute";
 import { getSubscription, postSubscription } from "./routes/SubscriptionsRoute";
 import { getVideos, postVideos } from "./routes/VideoRoute";
@@ -22,6 +23,7 @@ async function init() {
     await initHandlebars();
 
     app.use("/client", express.static("dist/client"));
+    app.use("/src", express.static("src"));
 
     app.get("/", prehandle(getVideos, context));
     app.post("/", prehandle(postVideos, context));
@@ -31,6 +33,8 @@ async function init() {
 
     app.get("/subscriptions", prehandle(getSubscription, context));
     app.post("/subscriptions", prehandle(postSubscription, context));
+
+    app.get("/api/removeChannelGroupMap", prehandle(getRemoveChannelGroupMap, context));
 
     app.get("/api/*", prehandle(getApi, context));
     app.post("/api/*", prehandle(postApi, context));
