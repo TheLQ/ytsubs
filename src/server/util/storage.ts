@@ -277,7 +277,7 @@ export class Storage {
       FROM subscriptions
       LEFT JOIN channelGroupMap USING (channelId)
       GROUP BY subscriptions.channelId
-      ORDER BY channelName
+      ORDER BY channelName COLLATE NOCASE
       `;
 
       return await this.db.all(sql);
@@ -305,7 +305,7 @@ export class Storage {
 
   public async getChannelGroups(): Promise<ChannelGroup[]> {
     try {
-      return await this.db.all(`SELECT * FROM channelGroup`);
+      return await this.db.all(`SELECT * FROM channelGroup ORDER BY groupName`);
     } catch (e) {
       throw new WrappedError("failed to get channel groups", e);
     }
