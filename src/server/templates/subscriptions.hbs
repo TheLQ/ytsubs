@@ -39,6 +39,17 @@
                 <button type="submit" name="addGroup">Add Group</button>
             </label>
         </form>
+
+        <form action="" method="POST">
+            <select name="groupName">
+                <option value=""></option>
+                {{#each @root.groups}}
+                    <option value="{{groupName}}">{{groupName}}</option>
+                {{/each}}
+            </select>
+            <input type="color" name="color"/>
+            <button type="submit" name="setGroupColor">Set Group Color</button>
+        </form>
     </div>
     <div id="content">
         <h1>Subscriptions</h1>
@@ -46,9 +57,14 @@
             {{#each subscriptions}}
                 <li>
                     <a href="https://www.youtube.com/channel/{{channelId}}">{{channelName}}</a> -
-                    {{#each groupsArray}}
-                        {{this}} <a href="/api/removeChannelGroupMap?channelId={{../channelId}}&groupName={{this}}
-                        ">x</a>,
+                    {{#each groupsInfo}}
+                        <span style="background-color: #{{color}};">
+                            {{groupName}} 
+                            <a href="/api/removeChannelGroupMap?channelId={{../channelId}}&groupName={{groupName}}">
+                                x
+                            </a>
+                        </span>
+                        ,
                     {{/each}}
                     <form action="" method="POST">
                         <select name="groupName">

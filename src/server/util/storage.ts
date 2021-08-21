@@ -20,11 +20,12 @@ export interface SubscriptionStorageSimple {
 
 export interface SubscriptionStorage extends SubscriptionStorageSimple {
   groups?: string;
-  groupsArray: string[];
+  groupsInfo: ChannelGroup[];
 }
 
 export interface ChannelGroup {
   groupName: string;
+  color: string | null;
 }
 
 export interface ChannelGroupMapping {
@@ -80,6 +81,14 @@ export class Storage {
     } catch (e) {
       throw new WrappedError("Failed to create subscriptions table", e);
     }
+
+  // try {
+  //   await db.run(`
+  //   alter table channelGroup ADD Column "color" varchar(6)
+  //   `)
+  // } catch (e) {
+  //   throw new WrappedError("Failed to alter", e);
+  // }
 
     try {
       await db.run(`
@@ -294,9 +303,17 @@ export class Storage {
     }
   }
 
-  public async getChannelGroups() {
+  public async getChannelGroups(): Promise<ChannelGroup[]> {
     try {
       return await this.db.all(`SELECT * FROM channelGroup`);
+    } catch (e) {
+      throw new WrappedError("failed to get channel groups", e);
+    }
+  }
+
+  public async setGroupColor(channelGroup: string, color: string) {
+    try {
+      return await this.db.run(`UPDATE channelGroup SET color = (?) WHERE groupName = ?`, color, channelGroup);
     } catch (e) {
       throw new WrappedError("failed to get channel groups", e);
     }

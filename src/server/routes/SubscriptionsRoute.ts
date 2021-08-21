@@ -41,7 +41,7 @@ export async function postSubscription(
     await context.db.addSubscriptions(subs);
   } else if (formData.fields.addGroup !== undefined) {
     await context.db.addChannelGroups([
-      { groupName: formData.fields.groupName as string },
+      { groupName: formData.fields.groupName as string, color: null },
     ]);
   } else if (formData.fields.addChannelGroup !== undefined) {
     await context.db.addChannelGroupMapping([
@@ -53,6 +53,12 @@ export async function postSubscription(
   } else if (formData.fields.syncSubscriptions !== undefined) {
     const url = await api.checkYoutubeStatus(context);
     res.send(url);
+    return;
+  } else if (formData.fields.setGroupColor !== undefined) {
+    let color: string = formData.fields.color as string
+    color = color.substr(1)
+    await context.db.setGroupColor(formData.fields.groupName as string, color)
+    res.end("applied color " + color + " to " + formData.fields.groupName)
     return;
   } else {
     await doDebugWork(formData.fields);

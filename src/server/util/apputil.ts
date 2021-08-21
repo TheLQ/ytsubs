@@ -72,3 +72,11 @@ export function parseForm(
     });
   });
 }
+
+export function findOrFail<T>(arr: Array<T>, predicate: (entry: T) => boolean): T {
+  const res = arr.find(predicate)
+  if (res == undefined) {
+    throw new Error("Not found")
+  }
+  return res;
+}
