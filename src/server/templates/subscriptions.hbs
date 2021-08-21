@@ -60,7 +60,7 @@
                     {{#each groupsInfo}}
                         <div class="channel-tag" style="background-color: #{{color}};">
                             {{groupName}} 
-                            <form action="/api/group/channel" ajaxmethod="DELETE" class="ajaxform">
+                            <form class="group-channel-remove-form ajaxform" action="/api/group/channel" ajaxmethod="DELETE">
                                 <input type="hidden" name="channelId" value="{{../channelId}}"/>
                                 <input type="hidden" name="groupName" value="{{groupName}}"/>
                                 <button type="submit" name="submit">x</button>
@@ -68,7 +68,7 @@
                         </div>
                         ,
                     {{/each}}
-                    <form action="/api/group/channel" ajaxmethod="POST" class="ajaxform">
+                    <form class="group-channel-add-form ajaxform" action="/api/group/channel" ajaxmethod="POST">
                         <select name="groupName">
                             <option value=""></option>
                             {{#each @root.groups}}

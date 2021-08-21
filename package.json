@@ -47,7 +47,7 @@
     "webpack-cli": "^4.7.2"
   },
   "scripts": {
-    "format": "prettier --write 'src/**/*.{ts,vue}' dist/index.html dist/main.css package.json rollup.config.js tsconfig.json tslint.json",
+    "format": "prettier --write 'src/**/*.ts' package.json tsconfig.json tslint.json",
     "run": "node --es-module-specifier-resolution=node -r source-map-support/register dist/server/index.js",
     "compileweb": "node --max-old-space-size=8192 ./node_modules/.bin/webpack --config webpack.config.cjs",
     "update": "npm-check-updates -u"

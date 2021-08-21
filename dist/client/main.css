@@ -68,6 +68,10 @@ form {
   display: inline;
 }
 
-.channel-tag form {
+.group-channel-add-form {
+  display: inline;
+}
+
+.group-channel-remove-form {
   display: inline;
 }
