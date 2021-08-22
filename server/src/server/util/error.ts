@@ -1,20 +1,3 @@
-import { exit } from "process";
-
-const EXIT_FATAL = 5;
-
-export function fatalError(err: any, msg?: string): void {
-  if (err instanceof WrappedError) {
-    console.log(err.toString());
-  } else {
-    console.log(err);
-  }
-
-  if (typeof msg !== "undefined") {
-    console.log(msg);
-  }
-  exit(EXIT_FATAL);
-}
-
 export function prettyError(err: any): string {
   let message: string;
   if (err instanceof WrappedError) {

@@ -2,6 +2,18 @@ import express from "express";
 import { Context } from "..";
 import { parseForm } from "../util/apputil";
 
+export const GET_API_GROUP = "/api/group"
+export async function getApiGroup(
+  req: express.Request,
+  res: express.Response,
+  context: Context
+): Promise<void> {
+  const result = await context.db.getChannelGroups();
+  
+  res.type("json")
+  res.end(JSON.stringify(result))
+}
+
 export async function postApiGroupColor(
   req: express.Request,
   res: express.Response,

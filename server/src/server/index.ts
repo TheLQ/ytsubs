@@ -1,6 +1,6 @@
 import express from "express";
 import fs from "fs";
-import { deleteApiGroupChannel, postApiGroupAdd, postApiGroupChannel, postApiGroupColor } from "./routes/ApiGroupRoute";
+import { deleteApiGroupChannel, getApiGroup, GET_API_GROUP, postApiGroupAdd, postApiGroupChannel, postApiGroupColor } from "./routes/ApiGroupRoute";
 import { getApiVideos, GET_API_VIDEOS } from "./routes/ApiVideosRoute";
 import { postYoutubeSubscriptions } from "./routes/ApiYoutubeRoute";
 import { getSubscription, postSubscription } from "./routes/SubscriptionsRoute";
@@ -23,18 +23,20 @@ async function init() {
 
     await initHandlebars();
 
-    app.use("/client", express.static("dist/client"));
-    app.use("/src", express.static("src"));
+    app.use(express.static("../client/dist"))
+    // app.use("/client", express.static("dist/client"));
+    // app.use("/src", express.static("src"));
 
-    app.get("/", prehandle(getVideos, context));
-    app.post("/", prehandle(postVideos, context));
-
-    app.get("/subscriptions", prehandle(getSubscription, context));
-    app.post("/subscriptions", prehandle(postSubscription, context));
+    //app.get("/*", prehandle(getVideos, context));
+    //app.post("/", prehandle(postVideos, context));
 
     app.get("/subscriptions", prehandle(getSubscription, context));
     app.post("/subscriptions", prehandle(postSubscription, context));
 
+    app.get("/subscriptions", prehandle(getSubscription, context));
+    app.post("/subscriptions", prehandle(postSubscription, context));
+
+    app.get(GET_API_GROUP, prehandle(getApiGroup, context));
     app.post("/api/group/add", prehandle(postApiGroupAdd, context));
     app.post("/api/group/color", prehandle(postApiGroupColor, context));
     app.post("/api/group/channel", prehandle(postApiGroupChannel, context));
@@ -49,7 +51,7 @@ async function init() {
       console.log(`Example app listening at http://${bindAddress}:${port}`);
     });
   } catch (e) {
-    error.fatalError(e, "failed to init");
+    fatalError(e, "failed to init");
   }
 }
 
@@ -109,4 +111,19 @@ export class Context {
   private constructor(db: Storage) {
     this.db = db;
   }
+}
+
+// TODO: Avoid importing exit (from process) in client js
+const EXIT_FATAL = 5;
+export function fatalError(err: any, msg?: string): void {
+  if (err instanceof error.WrappedError) {
+    console.log(err.toString());
+  } else {
+    console.log(err);
+  }
+
+  if (typeof msg !== "undefined") {
+    console.log(msg);
+  }
+  process.exit(EXIT_FATAL);
 }
