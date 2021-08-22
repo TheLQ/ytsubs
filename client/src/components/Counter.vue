@@ -4,8 +4,6 @@
 </template>
 
 <script lang="ts">
-  import {getElement} from  "../../../../ytsubs/src/utils/xmlUtils"
-
   import { ref, defineComponent } from 'vue'
   export default defineComponent({
     name: "mycounter",

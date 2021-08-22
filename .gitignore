@@ -1,6 +1,6 @@
 server/node_modules/
 server/cache_feed/
-server/client
+server/client/
 test.js
 
 server/dist/**/*.js
