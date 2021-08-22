@@ -1,6 +1,7 @@
 import express from "express";
 import fs from "fs";
 import { deleteApiGroupChannel, getApiGroup, GET_API_GROUP, postApiGroupAdd, postApiGroupChannel, postApiGroupColor } from "./routes/ApiGroupRoute";
+import { getApiSubscriptions, GET_API_SUBSCRIPTIONS } from "./routes/ApiSubscriptionRoute";
 import { getApiVideos, GET_API_VIDEOS } from "./routes/ApiVideosRoute";
 import { postYoutubeSubscriptions } from "./routes/ApiYoutubeRoute";
 import { getSubscription, postSubscription } from "./routes/SubscriptionsRoute";
@@ -45,6 +46,8 @@ async function init() {
     app.post("/api/youtube/subscriptions", prehandle(postYoutubeSubscriptions, context))
 
     app.get(GET_API_VIDEOS, prehandle(getApiVideos, context))
+
+    app.get(GET_API_SUBSCRIPTIONS, prehandle(getApiSubscriptions, context))
 
     const bindAddress = process.env.USER === "dev" ? "0.0.0.0" : "127.0.0.1";
     app.listen(port, bindAddress, () => {
