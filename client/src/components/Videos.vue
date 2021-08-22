@@ -21,14 +21,17 @@
 
     <div class="video-container">
       <div class="video-box" v-for="video in videos">
-        <a class="video-link" href="https://www.youtube.com/watch?v={{videoId}}">
-          <img src="https://i4.ytimg.com/vi/{{videoId}}/mqdefault.jpg" />
+        <a class="video-link" v-bind:href="'https://www.youtube.com/watch?v=' + video.videoId">
+          <img v-bind:src="'https://i4.ytimg.com/vi/' + video.videoId + '/mqdefault.jpg'" />
           <h3 class="video-title">{{ video.title }}</h3>
         </a>
         <div class="video-channel-wrapper">
-          <a class="video-channel" href="/?channelId={{channelId}}">{{ video.channelName }}</a>
+          <a
+            class="video-channel"
+            v-bind:href="'/?channelId=' + video.channelId"
+          >{{ video.channelName }}</a>
         </div>
-        <div class="video-published">{{ video.published }}</div>
+        <div class="video-published">{{ video.publishedRelative }}</div>
       </div>
     </div>
   </div>
@@ -37,7 +40,6 @@
 <script lang="ts">
 import { ref, defineComponent, PropType } from 'vue'
 import { GetVideosResult, ChannelGroup } from "../../../server/src/server/util/storage"
-import { GET_API_VIDEOS } from "../../../server/src/server/routes/ApiVideosRoute"
 
 interface MyData {
   groups: ChannelGroup[],
@@ -48,31 +50,79 @@ export default defineComponent({
   name: 'HelloWorld',
   data() {
     return {
-        groups: [],
-        videos: [],
+      groups: [],
+      videos: [],
     } as MyData
   },
-  async mounted() {
-    const res = await fetch("http://127.0.0.1:3001" + GET_API_VIDEOS)
-    this.videos = await res.json()
+  mounted() {
+    fetch("http://127.0.0.1:3001/api/videos")
+      .then(res => res.json())
+      .then(json => {
+        this.videos = json
+      }).catch(e => {
+        alert("failed to get Videos")
+      })
+
+    fetch("http://127.0.0.1:3001/api/group")
+      .then(res => res.json())
+      .then(json => {
+        this.groups = json
+      }).catch(e => {
+        alert("failed to get groups")
+      })
   }
 })
 </script>
 
 <style scoped>
-a {
-  color: #42b983;
+#sidebar {
+  flex-basis: 10rem;
+  flex-grow: 1;
 }
 
-label {
-  margin: 0 0.5em;
-  font-weight: bold;
+#content {
+  flex-basis: 0;
+  flex-grow: 999;
+  min-width: 50%;
 }
 
-code {
-  background-color: #eee;
-  padding: 2px 4px;
-  border-radius: 4px;
-  color: #304455;
+/* video page */
+
+.video-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.video-box {
+  margin: 5px;
+  /* border: 1px solid; */
+  /*
+  https://gist.github.com/bojanvidanovic/0b31443827c2c424469da754376180d4
+  480px - too big
+  */
+  width: 320px;
+}
+
+.video-link {
+  outline: none;
+  text-decoration: none;
+}
+
+.video-title {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+
+  font-size: 1rem;
+  color: black;
+}
+
+.video-channel-wrapper {
+  margin-top: 0;
+}
+
+.video-channel {
+  outline: none;
+  text-decoration: none;
+  color: #838383;
 }
 </style>
