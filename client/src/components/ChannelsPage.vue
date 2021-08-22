@@ -43,7 +43,7 @@ interface MyData {
 }
 
 export default defineComponent({
-  name: "Subscriptions",
+  name: "ChannelsPage",
   data() {
     return {
       subscriptions: [],

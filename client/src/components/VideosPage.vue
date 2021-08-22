@@ -47,7 +47,7 @@ interface MyData {
 }
 
 export default defineComponent({
-  name: 'HelloWorld',
+  name: 'VideosPage',
   data() {
     return {
       groups: [],

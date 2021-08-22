@@ -2,7 +2,7 @@
   <h1>Hello App!</h1>
   <p>
     <router-link to="/">Videos</router-link>
-    <router-link to="/subscriptions">Subscriptions</router-link>
+    <router-link to="/channels">Channels</router-link>
   </p>
   <div id="content">
     <router-view></router-view>
@@ -12,14 +12,14 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import Videos from './Videos.vue'
-import Subscriptions from './Subscriptions.vue'
+import VideosPage from './VideosPage.vue'
+import ChannelsPage from './ChannelsPage.vue'
 
 export default defineComponent({
   name: 'App',
   components: {
-    Videos,
-    Subscriptions,
+    VideosPage,
+    ChannelsPage,
   }
 })
 </script>

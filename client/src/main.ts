@@ -1,14 +1,14 @@
 import { createApp } from 'vue'
 import App from './components/App.vue'
-import Videos from './components/Videos.vue'
-import Subscriptions from './components/Subscriptions.vue'
+import VideosPage from './components/VideosPage.vue'
+import ChannelsPage from './components/ChannelsPage.vue'
 import { createRouter, createWebHashHistory } from "vue-router";
 
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
-    { path: '/', component: Videos },
-    { path: '/subscriptions', component: Subscriptions },
+    { path: '/', component: VideosPage },
+    { path: '/channels', component: ChannelsPage },
   ]
 })
 
