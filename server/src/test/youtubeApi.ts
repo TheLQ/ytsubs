@@ -1,4 +1,4 @@
-import { IVueData } from "./vue";
+import { IVueData } from "../web/vue";
 
 const YOUTUBE_CLIENT_ID =
   "816720081291-3nbo9llrvja6fia9n8c4qgl8sqbvif13.apps.googleusercontent.com";
