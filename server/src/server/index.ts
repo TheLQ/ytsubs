@@ -1,6 +1,7 @@
 import express from "express";
 import fs from "fs";
 import { deleteApiGroupChannel, postApiGroupAdd, postApiGroupChannel, postApiGroupColor } from "./routes/ApiGroupRoute";
+import { getApiVideos, GET_API_VIDEOS } from "./routes/ApiVideosRoute";
 import { postYoutubeSubscriptions } from "./routes/ApiYoutubeRoute";
 import { getSubscription, postSubscription } from "./routes/SubscriptionsRoute";
 import { getVideos, postVideos } from "./routes/VideoRoute";
@@ -16,7 +17,7 @@ log.info("Starting app");
 async function init() {
   try {
     const app = express();
-    const port = 3000;
+    const port = 3001;
 
     const context = await Context.create();
 
@@ -40,6 +41,8 @@ async function init() {
     app.delete("/api/group/channel", prehandle(deleteApiGroupChannel, context));
 
     app.post("/api/youtube/subscriptions", prehandle(postYoutubeSubscriptions, context))
+
+    app.get(GET_API_VIDEOS, prehandle(getApiVideos, context))
 
     const bindAddress = process.env.USER === "dev" ? "0.0.0.0" : "127.0.0.1";
     app.listen(port, bindAddress, () => {
@@ -71,6 +74,9 @@ export function prehandle(callback: UwsCallback, context: Context) {
   ): Promise<void> {
     log.http(`-- ${req.method} ${req.url}`);
     try {
+      // TODO: Needed for web service but wildly insecure
+      res.setHeader("Access-Control-Allow-Origin", "*")
+
       const result = callback(req, res, context);
       if (result instanceof Promise) {
         await result;

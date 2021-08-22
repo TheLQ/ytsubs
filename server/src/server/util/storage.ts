@@ -1,4 +1,5 @@
 import _ from "lodash";
+import moment from "moment";
 import { Database, open } from "sqlite";
 import { ISqlite } from "sqlite/build/interfaces";
 import sqlite3 from "sqlite3";
@@ -43,6 +44,10 @@ export interface GetVideoOptions {
 
 interface GetChannelOptions {
   notUpdatedIn?: string;
+}
+
+export interface GetVideosResult extends SubscriptionStorage, VideoStorage {
+  publishedRelative: string;
 }
 
 export class Storage {
@@ -176,7 +181,7 @@ export class Storage {
 
   public async getVideos(
     options: GetVideoOptions
-  ): Promise<VideoStorage[] & SubscriptionStorage[]> {
+  ): Promise<GetVideosResult[]> {
     let sql = "";
     try {
       const sqlPlaceholders: any[] = [];
@@ -208,7 +213,11 @@ export class Storage {
       `;
       sqlPlaceholders.push(options.limit);
 
-      return await this.db.all(sql, sqlPlaceholders);
+      const result = await this.db.all(sql, sqlPlaceholders);
+      for (const row of result) {
+        row.publishedRelative = moment(row.published).fromNow();
+      }
+      return result;
     } catch (e) {
       const debugOpts = JSON.stringify(options);
       throw new WrappedError(`Failed to get videos\n${sql}\n${debugOpts}`, e);

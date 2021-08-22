@@ -59,18 +59,6 @@ export async function checkYoutubeStatus(context: Context) {
   // return youtube.authTest();
 }
 
-export async function getVideos(context: Context, options: GetVideoOptions) {
-  const videosRaw = await context.db.getVideos({
-    ...options,
-    limit: 100,
-  });
-
-  return videosRaw.map((entry: any) => {
-    entry.publishedRelative = moment(entry.published).fromNow();
-    return entry;
-  });
-}
-
 export async function getSubscriptions(context: Context) {
   const groups = await context.db.getChannelGroups();
   const subscriptionsRaw = await context.db.getSubscriptions();
