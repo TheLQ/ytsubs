@@ -4,7 +4,7 @@ import fs from "fs";
 import Handlebars, { HelperOptions } from "handlebars";
 import Path from "path";
 import process from "process";
-import { promiseAllThrow } from "../util/apputil";
+import { promiseAllThrow } from "../util/langutils";
 import { WrappedError } from "../util/error";
 import logger from "../util/logger";
 

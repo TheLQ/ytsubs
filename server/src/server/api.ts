@@ -3,7 +3,6 @@ import _ from "lodash";
 import moment from "moment";
 import asyncPool from "tiny-async-pool";
 import {Context} from ".";
-import { findOrFail, stringSort } from "./util/apputil";
 import {WrappedError} from "./util/error";
 import logger from "./util/logger";
 import {GetVideoOptions} from "./util/storage";
@@ -57,17 +56,4 @@ export async function downloadSubscriptions(context: Context) {}
 
 export async function checkYoutubeStatus(context: Context) {
   // return youtube.authTest();
-}
-
-export async function getSubscriptions(context: Context) {
-  const groups = await context.db.getChannelGroups();
-  const subscriptionsRaw = await context.db.getSubscriptions();
-
-  return subscriptionsRaw.map((entry) => {
-    if (entry.groups) {
-      entry.groupsInfo = entry.groups.split(",").map(groupNeedle => findOrFail(groups, e => e.groupName == groupNeedle));
-      entry.groupsInfo.sort((a, b) => stringSort(a.groupName, b.groupName))
-    }
-    return entry;
-  });
 }
