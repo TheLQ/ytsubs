@@ -4,7 +4,6 @@ import { deleteApiGroupChannel, getApiGroup, GET_API_GROUP, postApiGroupAdd, pos
 import { getApiSubscriptions, GET_API_SUBSCRIPTIONS } from "./routes/ApiSubscriptionRoute";
 import { getApiVideos, GET_API_VIDEOS } from "./routes/ApiVideosRoute";
 import { postYoutubeSubscriptions } from "./routes/ApiYoutubeRoute";
-import { getSubscription, postSubscription } from "./routes/SubscriptionsRoute";
 import { getVideos, postVideos } from "./routes/VideoRoute";
 import { initHandlebars } from "./templates";
 import * as error from "./util/error";
@@ -31,11 +30,7 @@ async function init() {
     //app.get("/*", prehandle(getVideos, context));
     //app.post("/", prehandle(postVideos, context));
 
-    app.get("/subscriptions", prehandle(getSubscription, context));
-    app.post("/subscriptions", prehandle(postSubscription, context));
-
-    app.get("/subscriptions", prehandle(getSubscription, context));
-    app.post("/subscriptions", prehandle(postSubscription, context));
+    app.options("/*", prehandle(optionsCors, context));
 
     app.get(GET_API_GROUP, prehandle(getApiGroup, context));
     app.post("/api/group/add", prehandle(postApiGroupAdd, context));
@@ -79,8 +74,7 @@ export function prehandle(callback: UwsCallback, context: Context) {
   ): Promise<void> {
     log.http(`-- ${req.method} ${req.url}`);
     try {
-      // TODO: Needed for web service but wildly insecure
-      res.setHeader("Access-Control-Allow-Origin", "*")
+      setCors(res);
 
       const result = callback(req, res, context);
       if (result instanceof Promise) {
@@ -92,6 +86,22 @@ export function prehandle(callback: UwsCallback, context: Context) {
       log.error(err);
     }
   };
+}
+
+export function optionsCors(
+  req: express.Request,
+  res: express.Response,
+  context: Context
+) {
+  setCors(res);
+  res.end();
+}
+
+function setCors(res: express.Response) {
+  // Allow the dev web server to connect to this backend server
+  // TODO: Set origin to be less restrictive...
+  res.setHeader("Access-Control-Allow-Origin", "*")
+  res.setHeader("Access-Control-Allow-Methods", "DELETE, POST")
 }
 
 export class Context {
