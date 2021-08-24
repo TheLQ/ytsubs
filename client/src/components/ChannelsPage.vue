@@ -2,32 +2,26 @@
   <div id="subscriptions">
     <h1>Subscriptions</h1>
     <ul>
-      <li v-for="subscription of subscriptions">
-        <a href="https://www.youtube.com/channel/{{channelId}}">{{ subscription.channelName }}</a> -
+      <li v-for="channel of channels">
+        <a
+          v-bind:href="'https://www.youtube.com/channel/' + channel.channelId"
+        >{{ channel.channelName }}</a> -
         <div
           class="channel-tag"
           v-bind:style="'background-color: #' + group.color"
-          v-for="group of subscription.groupsInfo"
+          v-for="group of channel.groupsInfo"
         >
           {{ group.groupName }}
-          <form
-            class="group-channel-remove-form ajaxform"
-            action="/api/group/channel"
-            ajaxmethod="DELETE"
-          >
-            <input type="hidden" name="channelId" value="{{../channelId}}" />
-            <input type="hidden" name="groupName" value="{{groupName}}" />
-            <button type="submit" name="submit">x</button>
-          </form>
-        </div>,
-        <form class="group-channel-add-form ajaxform" action="/api/group/channel" ajaxmethod="POST">
-          <select name="groupName">
-            <option value></option>
-            <option value="{{groupName}}" v-for="group of groups">{{ group.groupName }}</option>
-          </select>
-          <input type="hidden" name="channelId" value="{{channelId}}" />
-          <button type="submit" name="addChannelGroup">Add Group</button>
-        </form>
+          <button
+            type="button"
+            name="submit"
+            @click="removeChannelGroup(channel.channelId, group.groupName)"
+          >x</button>
+        </div>
+        <select name="groupName" @change="addChannelGroup(channel.channelId, $event)">
+          <option value></option>
+          <option v-bind:value="group.groupName" v-for="group of groups">{{ group.groupName }}</option>
+        </select>
       </li>
     </ul>
   </div>
@@ -36,9 +30,15 @@
 <script lang="ts">
 import { ref, defineComponent } from 'vue'
 import { SubscriptionStorage, ChannelGroup } from '../../../server/src/server/util/storage'
+import { findOrFail, findIndexOrFail, stringSort } from '../../../server/src/server/util/langutils'
+import { apiVerify } from '../httputils'
+
+interface Channel extends SubscriptionStorage {
+  groupsInfo: ChannelGroup[]
+}
 
 interface MyData {
-  subscriptions: SubscriptionStorage[],
+  channels: Channel[],
   groups: ChannelGroup[],
 }
 
@@ -46,29 +46,78 @@ export default defineComponent({
   name: "ChannelsPage",
   data() {
     return {
-      subscriptions: [],
+      channels: [],
       groups: [],
     } as MyData
   },
-  mounted() {
-    fetch("http://127.0.0.1:3001/api/subscriptions")
-      .then(res => res.json())
-      .then(json => {
-        this.subscriptions = json
-      }).catch(e => {
-        alert("failed to get subscriptions")
-      })
+  async mounted() {
+    const groupsResponse = await fetch("http://127.0.0.1:3001/api/group")
+    this.groups = await groupsResponse.json()
 
-    fetch("http://127.0.0.1:3001/api/group")
-      .then(res => res.json())
-      .then(json => {
-        this.groups = json
-      }).catch(e => {
-        alert("failed to get subscriptions")
+    const channelResponse = await fetch("http://127.0.0.1:3001/api/subscriptions")
+    this.channels = await channelResponse.json()
+    this.channels = this.channels.map(entry => {
+      if (entry.groups) {
+        entry.groupsInfo = entry.groups.split(",").map(groupNeedle => findOrFail(this.groups, e => e.groupName == groupNeedle));
+        entry.groupsInfo.sort((a, b) => stringSort(a.groupName, b.groupName));
+      } else {
+        entry.groupsInfo = [];
+      }
+      return entry;
+    })
+  },
+  methods: {
+    removeChannelGroup(channelId: string, groupName: string) {
+      const channel = findOrFail(this.$data.channels, e => e.channelId == channelId)
+      if (channel.groups == undefined) {
+        throw new Error("state error")
+      }
+      const groupIndex = findIndexOrFail(channel.groupsInfo, e => e.groupName == groupName)
+      channel.groupsInfo.splice(groupIndex, 1)
+
+      const fd = new FormData();
+      fd.set("channelId", channelId)
+      fd.set("groupName", groupName)
+      fetch("http://127.0.0.1:3001/api/group/channel", {
+        method: "DELETE",
+        body: fd
       })
+        .then(apiVerify)
+        .catch(e => alert("failed to delete tag" + e))
+    },
+    addChannelGroup(channelId: string, event: Event) {
+      if (!event.target) {
+        throw new Error("state error")
+      }
+      const groupName = (event.target as HTMLSelectElement).value
+
+      const channel = findOrFail(this.$data.channels, e => e.channelId == channelId)
+      channel.groupsInfo.push(findOrFail(this.$data.groups, e => e.groupName == groupName))
+
+      const fd = new FormData();
+      fd.set("channelId", channelId)
+      fd.set("groupName", groupName)
+      fetch("http://127.0.0.1:3001/api/group/channel", {
+        method: "POST",
+        body: fd
+      })
+        .then(apiVerify)
+        .catch(e => alert("failed to add tag" + e))
+    }
   }
 })
 </script>
 
 <style scoped>
+.channel-tag {
+  display: inline;
+}
+
+.group-channel-add-form {
+  display: inline;
+}
+
+.group-channel-remove-form {
+  display: inline;
+}
 </style>

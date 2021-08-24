@@ -58,7 +58,8 @@ export async function postApiGroupChannel(
       groupName,
     },
   ]);
-  res.end(`added group ${groupName} to channel ${channelId}`)
+  // res.end(`added group ${groupName} to channel ${channelId}`)
+  res.end("1");
 }
 
 export async function deleteApiGroupChannel(
@@ -76,5 +77,6 @@ export async function deleteApiGroupChannel(
       groupName,
     },
   ]);
-  res.end(`remove group ${groupName} from channel ${channelId}`)
+  //res.end(`remove group ${groupName} from channel ${channelId}`)
+  res.end("1");
 }

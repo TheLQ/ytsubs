@@ -21,7 +21,6 @@ export interface SubscriptionStorageSimple {
 
 export interface SubscriptionStorage extends SubscriptionStorageSimple {
   groups?: string;
-  groupsInfo: ChannelGroup[];
 }
 
 export interface ChannelGroup {
@@ -358,10 +357,13 @@ export class Storage {
   ): Promise<void> {
     // no real easy way to do batching
     for (const groupMapping of groupMappings) {
-      await this.db.run(
+      const res = await this.db.run(
         "DELETE FROM channelGroupMap WHERE groupName = ? AND channelId = ?",
         [groupMapping.groupName, groupMapping.channelId]
       );
+      if (res.changes != 1) {
+        throw new Error(`Failed to delete ${groupMapping.channelId} group ${groupMapping.groupName} rows affected ${res.changes}`);
+      }
     }
   }
 
