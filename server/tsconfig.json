@@ -9,12 +9,13 @@
 
     "moduleResolution": "node",
 
-    "outDir": "./dist/server",
+    "outDir": "./dist/",
     "sourceMap": true,
     "noImplicitAny": true,
 
     "esModuleInterop": true
   },
-  // "include": ["./src/**/*", "./src/**/*.vue"]
-  "include": ["src/server"]
+  "include": ["./src/**/*"],
+  "exclude": ["./src/test"]
+  // "include": ["src/server", "src/common/utils/langutils.ts"]
 }

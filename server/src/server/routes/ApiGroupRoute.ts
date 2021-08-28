@@ -2,16 +2,16 @@ import express from "express";
 import { Context } from "..";
 import { parseForm } from "../util/apputil";
 
-export const GET_API_GROUP = "/api/group"
+export const GET_API_GROUP = "/api/group";
 export async function getApiGroup(
   req: express.Request,
   res: express.Response,
   context: Context
 ): Promise<void> {
   const result = await context.db.getChannelGroups();
-  
-  res.type("json")
-  res.end(JSON.stringify(result))
+
+  res.type("json");
+  res.end(JSON.stringify(result));
 }
 
 export async function postApiGroupColor(
@@ -21,12 +21,12 @@ export async function postApiGroupColor(
 ): Promise<void> {
   const formData = await parseForm(req);
 
-  let color: string = formData.fields.color as string
-  color = color.substr(1)
+  let color: string = formData.fields.color as string;
+  color = color.substr(1);
 
-  await context.db.setGroupColor(formData.fields.groupName as string, color)
+  await context.db.setGroupColor(formData.fields.groupName as string, color);
 
-  res.end(`applied color ${color} to group ${formData.fields.groupName}`)
+  res.end(`applied color ${color} to group ${formData.fields.groupName}`);
 }
 
 export async function postApiGroupAdd(
@@ -36,11 +36,9 @@ export async function postApiGroupAdd(
 ): Promise<void> {
   const formData = await parseForm(req);
 
-  const groupName = formData.fields.groupName as string
-  await context.db.addChannelGroups([
-    { groupName, color: null },
-  ]);
-  res.end(`Created new group ${groupName}`)
+  const groupName = formData.fields.groupName as string;
+  await context.db.addChannelGroups([{ groupName, color: null }]);
+  res.end(`Created new group ${groupName}`);
 }
 
 export async function postApiGroupChannel(
@@ -50,8 +48,8 @@ export async function postApiGroupChannel(
 ): Promise<void> {
   const formData = await parseForm(req);
 
-  const channelId = formData.fields.channelId as string
-  const groupName = formData.fields.groupName as string
+  const channelId = formData.fields.channelId as string;
+  const groupName = formData.fields.groupName as string;
   await context.db.addChannelGroupMapping([
     {
       channelId,
@@ -69,8 +67,8 @@ export async function deleteApiGroupChannel(
 ): Promise<void> {
   const formData = await parseForm(req);
 
-  const channelId = formData.fields.channelId as string
-  const groupName = formData.fields.groupName as string
+  const channelId = formData.fields.channelId as string;
+  const groupName = formData.fields.groupName as string;
   await context.db.removeChannelGroupMapping([
     {
       channelId,

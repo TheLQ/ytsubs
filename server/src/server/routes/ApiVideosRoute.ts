@@ -7,12 +7,12 @@ export async function postApiVideos(
   res: express.Response,
   context: Context
 ): Promise<void> {
-  const body = req.body as VideosRequest
-  console.log("body", body)
+  const body = req.body as VideosRequest;
+  console.log("body", body);
 
   const videos = await context.db.getVideos({
-    limit: 100
-  })
-  res.type("json")
-  res.end(JSON.stringify(videos))
+    limit: 100,
+  });
+  res.type("json");
+  res.end(JSON.stringify(videos));
 }

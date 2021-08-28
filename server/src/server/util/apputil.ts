@@ -1,7 +1,6 @@
 import express from "express";
 import formidable from "formidable";
 
-
 interface FormData {
   fields: formidable.Fields;
   files: formidable.Files;

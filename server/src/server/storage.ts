@@ -3,52 +3,23 @@ import moment from "moment";
 import { Database, open } from "sqlite";
 import { ISqlite } from "sqlite/build/interfaces";
 import sqlite3 from "sqlite3";
-import { WrappedError } from "./error";
-
-export interface VideoStorage {
-  videoId: string;
-  channelId: string;
-  published: string;
-  title: string;
-  description: string;
-}
-
-export interface SubscriptionStorageSimple {
-  channelId: string;
-  channelName: string;
-  lastUpdated?: string;
-}
-
-export interface SubscriptionStorage extends SubscriptionStorageSimple {
-  groups?: string;
-}
-
-export interface ChannelGroup {
-  groupName: string;
-  color: string | null;
-}
-
-export interface ChannelGroupMapping {
-  channelId: string;
-  groupName: string;
-}
+import { WrappedError } from "../common/util/error";
+import {
+  ChannelGroup,
+  ChannelGroupMapping,
+  VideoStorage,
+  GetVideoOptions,
+  GetChannelOptions,
+  GetVideosResult,
+  SubscriptionStorageSimple,
+  SubscriptionStorage,
+} from "../common/util/storage";
 
 type DB = Database;
 
-export interface GetVideoOptions {
-  group?: string;
-  channelId?: string;
-  limit?: number;
-}
-
-interface GetChannelOptions {
-  notUpdatedIn?: string;
-}
-
-export interface GetVideosResult extends SubscriptionStorage, VideoStorage {
-  publishedRelative: string;
-}
-
+/**
+ * Persistent Database API
+ */
 export class Storage {
   public static async create(dbpath: string) {
     const db = await open({
@@ -86,13 +57,13 @@ export class Storage {
       throw new WrappedError("Failed to create subscriptions table", e);
     }
 
-  // try {
-  //   await db.run(`
-  //   alter table channelGroup ADD Column "color" varchar(6)
-  //   `)
-  // } catch (e) {
-  //   throw new WrappedError("Failed to alter", e);
-  // }
+    // try {
+    //   await db.run(`
+    //   alter table channelGroup ADD Column "color" varchar(6)
+    //   `)
+    // } catch (e) {
+    //   throw new WrappedError("Failed to alter", e);
+    // }
 
     try {
       await db.run(`
@@ -178,9 +149,7 @@ export class Storage {
     return await this.db.all("SELECT * from videos");
   }
 
-  public async getVideos(
-    options: GetVideoOptions
-  ): Promise<GetVideosResult[]> {
+  public async getVideos(options: GetVideoOptions): Promise<GetVideosResult[]> {
     let sql = "";
     try {
       const sqlPlaceholders: any[] = [];
@@ -321,7 +290,11 @@ export class Storage {
 
   public async setGroupColor(channelGroup: string, color: string) {
     try {
-      return await this.db.run(`UPDATE channelGroup SET color = (?) WHERE groupName = ?`, color, channelGroup);
+      return await this.db.run(
+        `UPDATE channelGroup SET color = (?) WHERE groupName = ?`,
+        color,
+        channelGroup
+      );
     } catch (e) {
       throw new WrappedError("failed to get channel groups", e);
     }
@@ -362,7 +335,9 @@ export class Storage {
         [groupMapping.groupName, groupMapping.channelId]
       );
       if (res.changes != 1) {
-        throw new Error(`Failed to delete ${groupMapping.channelId} group ${groupMapping.groupName} rows affected ${res.changes}`);
+        throw new Error(
+          `Failed to delete ${groupMapping.channelId} group ${groupMapping.groupName} rows affected ${res.changes}`
+        );
       }
     }
   }

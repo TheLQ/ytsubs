@@ -1,8 +1,11 @@
 import parseXml from "@rgrove/parse-xml";
 import fs from "fs";
-import { WrappedError } from "./error";
+import { WrappedError } from "../../common/util/error";
 
-import { SubscriptionStorageSimple, VideoStorage } from "./storage";
+import {
+  SubscriptionStorageSimple,
+  VideoStorage,
+} from "../../common/util/storage";
 
 export const feedUrlPrefix =
   "https://www.youtube.com/feeds/videos.xml?channel_id=";

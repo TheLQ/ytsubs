@@ -10,15 +10,19 @@
             <option></option>
             <option
               v-for="group in groupFilterAvailable"
-              v-bind:style="'background-color: #' + group.color"
-            >{{ group.groupName }}</option>
+              :style="'background-color: #' + group.color"
+            >
+              {{ group.groupName }}
+            </option>
           </select>
         </label>
         <button @click="groupFilterApply(true, $event)">Include</button>
         <button @click="groupFilterApply(false, $event)">Exclude</button>
         <ul>
           <li v-for="group of groupFilterApplied">
-            <button alt="Remove" @click="groupFilterRemove(group.name)">x</button>
+            <button alt="Remove" @click="groupFilterRemove(group.name)">
+              x
+            </button>
             {{ group.included ? "+" : "-" }} {{ group.name }}
           </li>
         </ul>
@@ -53,16 +57,20 @@
   <div id="content">
     <h1>Videos</h1>
     <div class="video-container">
-      <div class="video-box" v-for="video in videos">
-        <a class="video-link" v-bind:href="'https://www.youtube.com/watch?v=' + video.videoId">
-          <img v-bind:src="'https://i4.ytimg.com/vi/' + video.videoId + '/mqdefault.jpg'" />
+      <div v-for="video in videos" class="video-box">
+        <a
+          class="video-link"
+          :href="'https://www.youtube.com/watch?v=' + video.videoId"
+        >
+          <img
+            :src="'https://i4.ytimg.com/vi/' + video.videoId + '/mqdefault.jpg'"
+          />
           <h3 class="video-title">{{ video.title }}</h3>
         </a>
         <div class="video-channel-wrapper">
-          <a
-            class="video-channel"
-            v-bind:href="'/?channelId=' + video.channelId"
-          >{{ video.channelName }}</a>
+          <a class="video-channel" :href="'/?channelId=' + video.channelId">{{
+            video.channelName
+          }}</a>
         </div>
         <div class="video-published">{{ video.publishedRelative }}</div>
       </div>
@@ -71,33 +79,40 @@
 </template>
 
 <script lang="ts">
-import { ref, defineComponent, PropType } from 'vue'
+import { ref, defineComponent, PropType } from "vue";
 
-import { GroupFilter, POST_API_VIDEOS, VideosRequest } from '../../../server/src/common/routes/ApiVideosRoute'
-import { WrappedError } from '../../../server/src/server/util/error'
-import { findIndexOrFail } from '../../../server/src/server/util/langutils'
-import { GetVideosResult, ChannelGroup } from "../../../server/src/server/util/storage"
+import {
+  GroupFilter,
+  POST_API_VIDEOS,
+  VideosRequest,
+} from "../../../server/src/common/routes/ApiVideosRoute";
+import { WrappedError } from "../../../server/src/common/util/error";
+import { findIndexOrFail } from "../../../server/src/common/util/langutils";
+import {
+  GetVideosResult,
+  ChannelGroup,
+} from "../../../server/src/common/util/storage";
 
 interface MyData {
-  groups: ChannelGroup[],
-  videos: GetVideosResult[],
-  groupFilterSelected: string,
-  groupFilterApplied: GroupFilter[]
+  groups: ChannelGroup[];
+  videos: GetVideosResult[];
+  groupFilterSelected: string;
+  groupFilterApplied: GroupFilter[];
 }
 
 export default defineComponent({
-  name: 'VideosPage',
+  name: "VideosPage",
   data() {
     return {
       groups: [],
       videos: [],
       groupFilterSelected: "",
       groupFilterApplied: [],
-    } as MyData
+    } as MyData;
   },
   computed: {
     groupFilterAvailable(): ChannelGroup[] {
-      return this.groups.filter(e => {
+      return this.groups.filter((e) => {
         for (const applied of this.groupFilterApplied) {
           if (applied.name == e.groupName) {
             return false;
@@ -105,70 +120,76 @@ export default defineComponent({
         }
         return true;
       });
-    }
+    },
   },
   mounted() {
-    this.refreshVideos()
-    .catch(e => {
+    this.refreshVideos().catch((e) => {
       alert(e);
       throw e;
     });
 
     fetch("http://127.0.0.1:3001/api/group")
-      .then(res => res.json())
-      .then(json => {
-        this.groups = json
-      }).catch(e => {
-        alert("failed to get groups")
+      .then((res) => res.json())
+      .then((json) => {
+        this.groups = json;
       })
+      .catch((e) => {
+        alert("failed to get groups");
+      });
   },
   methods: {
     async refreshVideos(): Promise<void> {
       const reqJson: VideosRequest = {
-        groups: this.groupFilterApplied
-      }
+        groups: this.groupFilterApplied,
+      };
 
       const res = await fetch("http://127.0.0.1:3001" + POST_API_VIDEOS, {
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
         method: "POST",
-        body: JSON.stringify(reqJson)
-      })
-      const body = await res.text()
+        body: JSON.stringify(reqJson),
+      });
+      const body = await res.text();
 
       let json;
       if (body == "") {
-        throw new Error("Body is empty")
+        throw new Error("Body is empty");
       }
       try {
         json = JSON.parse(body);
       } catch (e) {
-        throw new WrappedError("failed to parse response, body follows\r\n" + body, e);
+        throw new WrappedError(
+          "failed to parse response, body follows\r\n" + body,
+          e
+        );
       }
 
-      this.videos = json
+      this.videos = json;
     },
     groupFilterApply(included: boolean, event: MouseEvent) {
       // stop form submission
       event.preventDefault();
 
       if (this.groupFilterSelected == "") {
-        alert("no element selected")
-        return
+        alert("no element selected");
+        return;
       }
       this.groupFilterApplied.push({
         name: this.groupFilterSelected,
         included,
-      })
-      this.groupFilterSelected = ""
+      });
+      this.groupFilterSelected = "";
     },
     groupFilterRemove(name: string) {
-      const groupIndex = findIndexOrFail(this.groupFilterApplied, e => e.name == name)
+      const groupIndex = findIndexOrFail(
+        this.groupFilterApplied,
+        (e) => e.name == name
+      );
       this.groupFilterApplied.splice(groupIndex, 1);
-    }
-  }
-})
+    },
+  },
+});
 </script>
 
 <style scoped>

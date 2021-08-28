@@ -1,13 +1,23 @@
 import express from "express";
 import fs from "fs";
-import { deleteApiGroupChannel, getApiGroup, GET_API_GROUP, postApiGroupAdd, postApiGroupChannel, postApiGroupColor } from "./routes/ApiGroupRoute";
-import { getApiSubscriptions, GET_API_SUBSCRIPTIONS } from "./routes/ApiSubscriptionRoute";
+import {
+  deleteApiGroupChannel,
+  getApiGroup,
+  GET_API_GROUP,
+  postApiGroupAdd,
+  postApiGroupChannel,
+  postApiGroupColor,
+} from "./routes/ApiGroupRoute";
+import {
+  getApiSubscriptions,
+  GET_API_SUBSCRIPTIONS,
+} from "./routes/ApiSubscriptionRoute";
 import { POST_API_VIDEOS } from "../common/routes/ApiVideosRoute";
 import { postApiVideos } from "./routes/ApiVideosRoute";
 import { postYoutubeSubscriptions } from "./routes/ApiYoutubeRoute";
-import * as error from "./util/error";
+import * as error from "../common/util/error";
 import logger from "./util/logger";
-import { Storage } from "./util/storage";
+import { Storage } from "./storage";
 import { parseSubscriptionsOpml } from "./util/youtubeUtils";
 
 const log = logger("server");
@@ -18,10 +28,9 @@ async function init() {
     const app = express();
     const port = 3001;
 
-
     const context = await Context.create();
 
-    app.use(express.static("../client/dist"))
+    app.use(express.static("../client/dist"));
     // app.use("/client", express.static("dist/client"));
     // app.use("/src", express.static("src"));
 
@@ -36,16 +45,19 @@ async function init() {
     app.post("/api/group/channel", prehandle(postApiGroupChannel, context));
     app.delete("/api/group/channel", prehandle(deleteApiGroupChannel, context));
 
-    app.post("/api/youtube/subscriptions", prehandle(postYoutubeSubscriptions, context))
+    app.post(
+      "/api/youtube/subscriptions",
+      prehandle(postYoutubeSubscriptions, context)
+    );
 
-    app.post(POST_API_VIDEOS, prehandle(postApiVideos, context))
+    app.post(POST_API_VIDEOS, prehandle(postApiVideos, context));
 
-    app.get(GET_API_SUBSCRIPTIONS, prehandle(getApiSubscriptions, context))
+    app.get(GET_API_SUBSCRIPTIONS, prehandle(getApiSubscriptions, context));
 
-    
     app.use(express.json());
 
-    const bindAddress = process.env.USER === "dev" || true ? "0.0.0.0" : "127.0.0.1";
+    const bindAddress =
+      process.env.USER === "dev" || true ? "0.0.0.0" : "127.0.0.1";
     app.listen(port, bindAddress, () => {
       console.log(`Example app listening at http://${bindAddress}:${port}`);
     });

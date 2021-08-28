@@ -1,6 +1,7 @@
 <template>
   <nav>
     <h1 id="appname">ytsubs</h1>
+
     <router-link to="/">Videos</router-link>
     <span>|</span>
     <router-link to="/channels">Channels</router-link>
@@ -8,21 +9,20 @@
   <div id="content">
     <router-view></router-view>
   </div>
-  
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
-import VideosPage from './VideosPage.vue'
-import ChannelsPage from './ChannelsPage.vue'
+import { defineComponent } from "vue";
+import VideosPage from "./VideosPage.vue";
+import ChannelsPage from "./ChannelsPage.vue";
 
 export default defineComponent({
-  name: 'App',
+  name: "App",
   components: {
     VideosPage,
     ChannelsPage,
-  }
-})
+  },
+});
 </script>
 
 <style>

@@ -2,10 +2,9 @@ import bent from "bent";
 import _ from "lodash";
 import moment from "moment";
 import asyncPool from "tiny-async-pool";
-import {Context} from ".";
-import {WrappedError} from "./util/error";
+import { Context } from ".";
+import { WrappedError } from "../common/util/error";
 import logger from "./util/logger";
-import {GetVideoOptions} from "./util/storage";
 import * as youtube from "./util/youtubeUtils";
 
 const getUrl = bent("string");
@@ -30,10 +29,10 @@ export async function downloadVideosRSS(context: Context, messages: string[]) {
       try {
         xmlContent = await getUrl(youtube.feedUrlPrefix + entry.channelId);
       } catch (e) {
-        if (e.statusCode === 404) {
-          log.error(`404 for channel ${entry.channelId} ${entry.channelName}`);
-          return;
-        }
+        // if (e.statusCode === 404) {
+        //   log.error(`404 for channel ${entry.channelId} ${entry.channelName}`);
+        //   return;
+        // }
         throw e;
       }
       const videos = youtube.parseChannelFeed(xmlContent);

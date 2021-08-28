@@ -10,9 +10,9 @@ const YOUTUBE_DISCOVERY =
 export function youtubeInit(vueData: IVueData) {
   console.log("initClient");
   gapi.auth2.init({ client_id: YOUTUBE_CLIENT_ID }).then(
-    googleAuth => {
+    (googleAuth) => {
       // Listen for sign-in state changes.
-      googleAuth.isSignedIn.listen(isSignedIn => {
+      googleAuth.isSignedIn.listen((isSignedIn) => {
         youtubeOnSignin(vueData, isSignedIn);
       });
 
