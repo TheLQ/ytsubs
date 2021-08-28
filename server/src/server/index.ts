@@ -2,7 +2,8 @@ import express from "express";
 import fs from "fs";
 import { deleteApiGroupChannel, getApiGroup, GET_API_GROUP, postApiGroupAdd, postApiGroupChannel, postApiGroupColor } from "./routes/ApiGroupRoute";
 import { getApiSubscriptions, GET_API_SUBSCRIPTIONS } from "./routes/ApiSubscriptionRoute";
-import { getApiVideos, GET_API_VIDEOS } from "./routes/ApiVideosRoute";
+import { POST_API_VIDEOS } from "../common/routes/ApiVideosRoute";
+import { postApiVideos } from "./routes/ApiVideosRoute";
 import { postYoutubeSubscriptions } from "./routes/ApiYoutubeRoute";
 import * as error from "./util/error";
 import logger from "./util/logger";
@@ -16,6 +17,7 @@ async function init() {
   try {
     const app = express();
     const port = 3001;
+
 
     const context = await Context.create();
 
@@ -36,11 +38,14 @@ async function init() {
 
     app.post("/api/youtube/subscriptions", prehandle(postYoutubeSubscriptions, context))
 
-    app.get(GET_API_VIDEOS, prehandle(getApiVideos, context))
+    app.post(POST_API_VIDEOS, prehandle(postApiVideos, context))
 
     app.get(GET_API_SUBSCRIPTIONS, prehandle(getApiSubscriptions, context))
 
-    const bindAddress = process.env.USER === "dev" ? "0.0.0.0" : "127.0.0.1";
+    
+    app.use(express.json());
+
+    const bindAddress = process.env.USER === "dev" || true ? "0.0.0.0" : "127.0.0.1";
     app.listen(port, bindAddress, () => {
       console.log(`Example app listening at http://${bindAddress}:${port}`);
     });
@@ -96,8 +101,9 @@ export function optionsCors(
 function setCors(res: express.Response) {
   // Allow the dev web server to connect to this backend server
   // TODO: Set origin to be less restrictive...
-  res.setHeader("Access-Control-Allow-Origin", "*")
-  res.setHeader("Access-Control-Allow-Methods", "DELETE, POST")
+  res.setHeader("Access-Control-Allow-Origin", "http://127.0.0.1:3000");
+  res.setHeader("Access-Control-Allow-Methods", "POST, DELETE");
+  res.setHeader("Access-Control-Allow-Headers", "content-type");
 }
 
 export class Context {

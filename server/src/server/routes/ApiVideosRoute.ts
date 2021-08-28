@@ -1,12 +1,15 @@
 import express from "express";
 import { Context } from "..";
+import { VideosRequest } from "../../common/routes/ApiVideosRoute";
 
-export const GET_API_VIDEOS = "/api/videos"
-export async function getApiVideos(
+export async function postApiVideos(
   req: express.Request,
   res: express.Response,
   context: Context
 ): Promise<void> {
+  const body = req.body as VideosRequest
+  console.log("body", body)
+
   const videos = await context.db.getVideos({
     limit: 100
   })

@@ -1,19 +1,30 @@
 <template>
   <div id="sidebar">
     <h2>Filters</h2>
-    
+
     <div>
-      <label>
-        Groups
-        <select id="groupFilter">
-          <option></option>
-          <option v-for="group in groups">{{ group.groupName }}</option>
-        </select>
-        <button @select="doGroupFilter(true)">Include</button>
-        <button @select="doGroupFilter(false)">Exclude</button>
-      </label>
+      <form>
+        <label>
+          Groups
+          <select v-model="groupFilterSelected">
+            <option></option>
+            <option
+              v-for="group in groupFilterAvailable"
+              v-bind:style="'background-color: #' + group.color"
+            >{{ group.groupName }}</option>
+          </select>
+        </label>
+        <button @click="groupFilterApply(true, $event)">Include</button>
+        <button @click="groupFilterApply(false, $event)">Exclude</button>
+        <ul>
+          <li v-for="group of groupFilterApplied">
+            <button alt="Remove" @click="groupFilterRemove(group.name)">x</button>
+            {{ group.included ? "+" : "-" }} {{ group.name }}
+          </li>
+        </ul>
+      </form>
     </div>
-    <hr/>
+    <hr />
     <div>
       <label>
         Upload Frequency
@@ -26,15 +37,15 @@
         <button>Apply</button>
       </label>
     </div>
-    <hr/>
+    <hr />
     <div>
       <label>
         Upload Date After
-        <input type="date"/>
+        <input type="date" />
         <button>Apply</button>
       </label>
     </div>
-    <hr/>
+    <hr />
     <div>
       <button name="downloadFeeds">Download channel feeds</button>
     </div>
@@ -61,11 +72,17 @@
 
 <script lang="ts">
 import { ref, defineComponent, PropType } from 'vue'
+
+import { GroupFilter, POST_API_VIDEOS, VideosRequest } from '../../../server/src/common/routes/ApiVideosRoute'
+import { WrappedError } from '../../../server/src/server/util/error'
+import { findIndexOrFail } from '../../../server/src/server/util/langutils'
 import { GetVideosResult, ChannelGroup } from "../../../server/src/server/util/storage"
 
 interface MyData {
   groups: ChannelGroup[],
   videos: GetVideosResult[],
+  groupFilterSelected: string,
+  groupFilterApplied: GroupFilter[]
 }
 
 export default defineComponent({
@@ -74,16 +91,28 @@ export default defineComponent({
     return {
       groups: [],
       videos: [],
+      groupFilterSelected: "",
+      groupFilterApplied: [],
     } as MyData
   },
+  computed: {
+    groupFilterAvailable(): ChannelGroup[] {
+      return this.groups.filter(e => {
+        for (const applied of this.groupFilterApplied) {
+          if (applied.name == e.groupName) {
+            return false;
+          }
+        }
+        return true;
+      });
+    }
+  },
   mounted() {
-    fetch("http://127.0.0.1:3001/api/videos")
-      .then(res => res.json())
-      .then(json => {
-        this.videos = json
-      }).catch(e => {
-        alert("failed to get Videos")
-      })
+    this.refreshVideos()
+    .catch(e => {
+      alert(e);
+      throw e;
+    });
 
     fetch("http://127.0.0.1:3001/api/group")
       .then(res => res.json())
@@ -94,16 +123,49 @@ export default defineComponent({
       })
   },
   methods: {
-    doGroupFilter(include: boolean) {
-      const selector = document.getElementById("groupFilter") as HTMLSelectElement;
-      const currentOption = selector.value
-      if (currentOption == "") {
-        alert("no element selected")
+    async refreshVideos(): Promise<void> {
+      const reqJson: VideosRequest = {
+        groups: this.groupFilterApplied
       }
 
+      const res = await fetch("http://127.0.0.1:3001" + POST_API_VIDEOS, {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        method: "POST",
+        body: JSON.stringify(reqJson)
+      })
+      const body = await res.text()
 
+      let json;
+      if (body == "") {
+        throw new Error("Body is empty")
+      }
+      try {
+        json = JSON.parse(body);
+      } catch (e) {
+        throw new WrappedError("failed to parse response, body follows\r\n" + body, e);
+      }
 
-      selector.selectedIndex = 0;
+      this.videos = json
+    },
+    groupFilterApply(included: boolean, event: MouseEvent) {
+      // stop form submission
+      event.preventDefault();
+
+      if (this.groupFilterSelected == "") {
+        alert("no element selected")
+        return
+      }
+      this.groupFilterApplied.push({
+        name: this.groupFilterSelected,
+        included,
+      })
+      this.groupFilterSelected = ""
+    },
+    groupFilterRemove(name: string) {
+      const groupIndex = findIndexOrFail(this.groupFilterApplied, e => e.name == name)
+      this.groupFilterApplied.splice(groupIndex, 1);
     }
   }
 })
