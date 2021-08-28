@@ -1,5 +1,47 @@
 <template>
-  <div id="subscriptions">
+  <div id="sidebar">
+    <div>
+      <label>
+        Upload subscription list from
+        <a
+          href="https://www.youtube.com/subscription_manager?action_takeout=1"
+        >Youtube Subscription Manager</a>
+        <input type="file" name="xml" />
+        <button type="submit" name="uploadSubscriptions">Upload Subscriptions</button>
+      </label>
+    </div>
+
+    <div>
+      <label>
+        Check Youtube Auth
+        <button type="submit" name="checkYoutubeAuth">Check Youtube Auth</button>
+      </label>
+    </div>
+
+    <div>
+      <label>
+        Sync Subscriptions
+        <button type="submit" name="syncSubscriptions">Upload Subscriptions</button>
+      </label>
+    </div>
+
+    <div>
+      <label>
+        Add group
+        <input type="text" name="groupName" />
+        <button type="submit" name="addGroup">Add Group</button>
+      </label>
+    </div>
+
+    <div>
+      <select name="groupName">
+        <option value></option>
+      </select>
+      <input type="color" name="color" />
+      <button type="submit" name="setGroupColor">Set Group Color</button>
+    </div>
+  </div>
+  <div id="content">
     <h1>Subscriptions</h1>
     <ul>
       <li v-for="channel of channels">

@@ -110,17 +110,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-#sidebar {
-  flex-basis: 10rem;
-  flex-grow: 1;
-}
-
-#content {
-  flex-basis: 0;
-  flex-grow: 999;
-  min-width: 50%;
-}
-
 /* video page */
 
 .video-container {
