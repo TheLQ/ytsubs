@@ -4,8 +4,6 @@ import { deleteApiGroupChannel, getApiGroup, GET_API_GROUP, postApiGroupAdd, pos
 import { getApiSubscriptions, GET_API_SUBSCRIPTIONS } from "./routes/ApiSubscriptionRoute";
 import { getApiVideos, GET_API_VIDEOS } from "./routes/ApiVideosRoute";
 import { postYoutubeSubscriptions } from "./routes/ApiYoutubeRoute";
-import { getVideos, postVideos } from "./routes/VideoRoute";
-import { initHandlebars } from "./templates";
 import * as error from "./util/error";
 import logger from "./util/logger";
 import { Storage } from "./util/storage";
@@ -20,8 +18,6 @@ async function init() {
     const port = 3001;
 
     const context = await Context.create();
-
-    await initHandlebars();
 
     app.use(express.static("../client/dist"))
     // app.use("/client", express.static("dist/client"));
