@@ -1,9 +1,10 @@
 <template>
-  <h1>Hello App!</h1>
-  <p>
+  <nav>
+    <h1 id="appname">ytsubs</h1>
     <router-link to="/">Videos</router-link>
+    <span>|</span>
     <router-link to="/channels">Channels</router-link>
-  </p>
+  </nav>
   <div id="content">
     <router-view></router-view>
   </div>
@@ -25,6 +26,10 @@ export default defineComponent({
 </script>
 
 <style>
+#appname {
+  display: inline;
+}
+
 #app {
   display: flex;
   flex-wrap: wrap;

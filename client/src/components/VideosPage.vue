@@ -1,24 +1,46 @@
 <template>
   <div id="sidebar">
-    <ul>
-      <li>
-        <a href="/">none</a>
-      </li>
-      <li v-for="group in groups">
-        <a href="/?group={{groupName}}">{{ group.groupName }}</a>
-      </li>
-      <li>Hey look</li>
-      <li>content!</li>
-    </ul>
+    <h2>Filters</h2>
+    
+    <div>
+      <label>
+        Groups
+        <select id="groupFilter">
+          <option></option>
+          <option v-for="group in groups">{{ group.groupName }}</option>
+        </select>
+        <button @select="doGroupFilter(true)">Include</button>
+        <button @select="doGroupFilter(false)">Exclude</button>
+      </label>
+    </div>
+    <hr/>
+    <div>
+      <label>
+        Upload Frequency
+        <select>
+          <option></option>
+          <option>&lt;5 past month</option>
+          <option>&lt;5 6 months</option>
+          <option>&lt;10 6 months</option>
+        </select>
+        <button>Apply</button>
+      </label>
+    </div>
+    <hr/>
+    <div>
+      <label>
+        Upload Date After
+        <input type="date"/>
+        <button>Apply</button>
+      </label>
+    </div>
+    <hr/>
+    <div>
+      <button name="downloadFeeds">Download channel feeds</button>
+    </div>
   </div>
   <div id="content">
     <h1>Videos</h1>
-    <div class="subscription-box">
-      <form action method="POST" enctype="multipart/form-data">
-        <button name="downloadFeeds">Download channel feeds</button>
-      </form>
-    </div>
-
     <div class="video-container">
       <div class="video-box" v-for="video in videos">
         <a class="video-link" v-bind:href="'https://www.youtube.com/watch?v=' + video.videoId">
@@ -70,6 +92,19 @@ export default defineComponent({
       }).catch(e => {
         alert("failed to get groups")
       })
+  },
+  methods: {
+    doGroupFilter(include: boolean) {
+      const selector = document.getElementById("groupFilter") as HTMLSelectElement;
+      const currentOption = selector.value
+      if (currentOption == "") {
+        alert("no element selected")
+      }
+
+
+
+      selector.selectedIndex = 0;
+    }
   }
 })
 </script>
