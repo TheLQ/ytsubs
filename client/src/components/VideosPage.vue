@@ -1,7 +1,7 @@
 <template>
   <div id="sidebar">
-    <div>
-      <form>
+    <form>
+      <div>
         <label>
           Groups
           <select v-model="groupFilterSelected">
@@ -24,33 +24,33 @@
             {{ group.included ? "+" : "-" }} {{ group.name }}
           </li>
         </ul>
-      </form>
-    </div>
-    <hr />
-    <div>
-      <label>
-        Upload Frequency
-        <select>
-          <option></option>
-          <option>&lt;5 past month</option>
-          <option>&lt;5 6 months</option>
-          <option>&lt;10 6 months</option>
-        </select>
+      </div>
+      <hr />
+      <div>
+        <label>
+          Upload Frequency
+          <select>
+            <option></option>
+            <option>&lt;5 past month</option>
+            <option>&lt;5 6 months</option>
+            <option>&lt;10 6 months</option>
+          </select>
+        </label>
         <button>Apply</button>
-      </label>
-    </div>
-    <hr />
-    <div>
-      <label>
-        Upload Date After
-        <input type="date" />
+      </div>
+      <hr />
+      <div>
+        <label>
+          Upload Date After
+          <input type="date" />
+        </label>
         <button>Apply</button>
-      </label>
-    </div>
-    <hr />
-    <div>
-      <button name="downloadFeeds">Download channel feeds</button>
-    </div>
+      </div>
+      <hr />
+      <div>
+        <button name="downloadFeeds">Download channel feeds</button>
+      </div>
+    </form>
   </div>
   <div id="content">
     <div class="video-container">
@@ -65,9 +65,9 @@
           <h3 class="video-title">{{ video.title }}</h3>
         </a>
         <div class="video-channel-wrapper">
-          <a class="video-channel" :href="'/?channelId=' + video.channelId">
-            {{ video.channelName }}
-          </a>
+          <a class="video-channel" :href="'/?channelId=' + video.channelId">{{
+            video.channelName
+          }}</a>
         </div>
         <div class="video-published">{{ video.publishedRelative }}</div>
       </div>
