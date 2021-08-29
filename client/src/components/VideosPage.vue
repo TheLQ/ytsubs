@@ -1,7 +1,5 @@
 <template>
   <div id="sidebar">
-    <h2>Filters</h2>
-
     <div>
       <form>
         <label>
@@ -55,7 +53,6 @@
     </div>
   </div>
   <div id="content">
-    <h1>Videos</h1>
     <div class="video-container">
       <div v-for="video in videos" class="video-box">
         <a

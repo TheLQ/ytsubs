@@ -159,22 +159,21 @@ export class Storage {
 
       if (options.groups !== undefined && options.groups.length > 0) {
         if (having == "") {
-          having = " HAVING"
+          having = " HAVING";
         }
         let counter = 0;
         for (const filter of options.groups) {
           counter++;
           if (counter > 1) {
-            having += " AND "
+            having += " AND ";
           }
 
           if (filter.included) {
-            having += " groups LIKE ?"
+            having += " groups LIKE ?";
           } else {
-            having += " groups NOT LIKE ?"
+            having += " groups NOT LIKE ?";
           }
-          sqlPlaceholders.push(`%${filter.name}%`);  
-          
+          sqlPlaceholders.push(`%${filter.name}%`);
         }
       }
 
@@ -197,7 +196,7 @@ export class Storage {
       LIMIT ?
       `;
       sqlPlaceholders.push(options.limit);
-      console.log("sql", sql)
+      console.log("sql", sql);
 
       const result = await this.db.all(sql, sqlPlaceholders);
       for (const row of result) {

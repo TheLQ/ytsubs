@@ -1,5 +1,5 @@
 <template>
-  <nav>
+  <nav id="navbar">
     <h1 id="appname">ytsubs</h1>
 
     <router-link to="/">Videos</router-link>
@@ -26,8 +26,18 @@ export default defineComponent({
 </script>
 
 <style>
-#appname {
+#navbar {
+  background-color: gray;
+}
+
+#navbar #appname {
   display: inline;
+  margin: 20px;
+}
+
+#navbar .router-link-active {
+  height: 100%;
+  background-color: lightgray;
 }
 
 #app {

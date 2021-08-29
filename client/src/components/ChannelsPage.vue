@@ -48,7 +48,6 @@
     </div>
   </div>
   <div id="content">
-    <h1>Subscriptions</h1>
     <ul>
       <li v-for="channel of channels">
         <a :href="'https://www.youtube.com/channel/' + channel.channelId">{{
@@ -150,7 +149,10 @@ export default defineComponent({
     }
   },
   methods: {
-    async removeChannelGroup(channelId: string, groupName: string): Promise<void> {
+    async removeChannelGroup(
+      channelId: string,
+      groupName: string
+    ): Promise<void> {
       const channel = findOrFail(
         this.$data.channels,
         (e) => e.channelId == channelId
