@@ -68,9 +68,9 @@
           <h3 class="video-title">{{ video.title }}</h3>
         </a>
         <div class="video-channel-wrapper">
-          <a class="video-channel" :href="'/?channelId=' + video.channelId">{{
-            video.channelName
-          }}</a>
+          <a class="video-channel" :href="'/?channelId=' + video.channelId">
+            {{ video.channelName }}
+          </a>
         </div>
         <div class="video-published">{{ video.publishedRelative }}</div>
       </div>
@@ -86,12 +86,13 @@ import {
   POST_API_VIDEOS,
   VideosRequest,
 } from "../../../server/src/common/routes/ApiVideosRoute";
-import { WrappedError } from "../../../server/src/common/util/error";
+import { GET_API_GROUP } from "../../../server/src/common/routes/ApiGroupRoute";
 import { findIndexOrFail } from "../../../server/src/common/util/langutils";
 import {
   GetVideosResult,
   ChannelGroup,
 } from "../../../server/src/common/util/storage";
+import { apiGetData, apiSendData, alertAndThrow } from "../util/httputils";
 
 interface MyData {
   groups: ChannelGroup[];
@@ -122,50 +123,34 @@ export default defineComponent({
       });
     },
   },
-  mounted() {
-    this.refreshVideos().catch((e) => {
-      alert(e);
-      throw e;
-    });
+  async mounted() {
+    // intentionally do requests sequentually for early exit errors
+    try {
+      const groups = (await apiGetData("GET", GET_API_GROUP)) as ChannelGroup[];
+      this.groups = groups;
+    } catch (e) {
+      alertAndThrow(e, "failed to get groups");
+      return;
+    }
 
-    fetch("http://127.0.0.1:3001/api/group")
-      .then((res) => res.json())
-      .then((json) => {
-        this.groups = json;
-      })
-      .catch((e) => {
-        alert("failed to get groups");
-      });
+    await this.refreshVideos();
   },
   methods: {
     async refreshVideos(): Promise<void> {
-      const reqJson: VideosRequest = {
-        groups: this.groupFilterApplied,
-      };
-
-      const res = await fetch("http://127.0.0.1:3001" + POST_API_VIDEOS, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: "POST",
-        body: JSON.stringify(reqJson),
-      });
-      const body = await res.text();
-
-      let json;
-      if (body == "") {
-        throw new Error("Body is empty");
-      }
       try {
-        json = JSON.parse(body);
+        const reqJson: VideosRequest = {
+          groups: this.groupFilterApplied,
+        };
+        const result = (await apiSendData(
+          "POST",
+          POST_API_VIDEOS,
+          reqJson
+        )) as GetVideosResult[];
+        this.videos = result;
       } catch (e) {
-        throw new WrappedError(
-          "failed to parse response, body follows\r\n" + body,
-          e
-        );
+        alertAndThrow(e, "failed to get groups");
+        return;
       }
-
-      this.videos = json;
     },
     groupFilterApply(included: boolean, event: MouseEvent) {
       // stop form submission
@@ -180,6 +165,8 @@ export default defineComponent({
         included,
       });
       this.groupFilterSelected = "";
+
+      return this.refreshVideos();
     },
     groupFilterRemove(name: string) {
       const groupIndex = findIndexOrFail(

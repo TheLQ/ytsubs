@@ -1,8 +1,8 @@
 import express from "express";
 import { Context } from "..";
+import { ARG_GROUP_NAME, ARG_COLOR } from "../../common/routes/ApiGroupRoute";
 import { parseForm } from "../util/apputil";
 
-export const GET_API_GROUP = "/api/group";
 export async function getApiGroup(
   req: express.Request,
   res: express.Response,
@@ -14,67 +14,25 @@ export async function getApiGroup(
   res.end(JSON.stringify(result));
 }
 
-export async function postApiGroupColor(
+export async function putApiGroup(
   req: express.Request,
   res: express.Response,
   context: Context
 ): Promise<void> {
-  const formData = await parseForm(req);
+  const groupName = req.params[ARG_GROUP_NAME];
 
-  let color: string = formData.fields.color as string;
-  color = color.substr(1);
-
-  await context.db.setGroupColor(formData.fields.groupName as string, color);
-
-  res.end(`applied color ${color} to group ${formData.fields.groupName}`);
-}
-
-export async function postApiGroupAdd(
-  req: express.Request,
-  res: express.Response,
-  context: Context
-): Promise<void> {
-  const formData = await parseForm(req);
-
-  const groupName = formData.fields.groupName as string;
   await context.db.addChannelGroups([{ groupName, color: null }]);
-  res.end(`Created new group ${groupName}`);
-}
-
-export async function postApiGroupChannel(
-  req: express.Request,
-  res: express.Response,
-  context: Context
-): Promise<void> {
-  const formData = await parseForm(req);
-
-  const channelId = formData.fields.channelId as string;
-  const groupName = formData.fields.groupName as string;
-  await context.db.addChannelGroupMapping([
-    {
-      channelId,
-      groupName,
-    },
-  ]);
-  // res.end(`added group ${groupName} to channel ${channelId}`)
   res.end("1");
 }
 
-export async function deleteApiGroupChannel(
+export async function putApiGroupColor(
   req: express.Request,
   res: express.Response,
   context: Context
 ): Promise<void> {
-  const formData = await parseForm(req);
+  const groupName = req.params[ARG_GROUP_NAME];
+  const color = req.params[ARG_COLOR];
 
-  const channelId = formData.fields.channelId as string;
-  const groupName = formData.fields.groupName as string;
-  await context.db.removeChannelGroupMapping([
-    {
-      channelId,
-      groupName,
-    },
-  ]);
-  //res.end(`remove group ${groupName} from channel ${channelId}`)
+  await context.db.setGroupColor(groupName, color);
   res.end("1");
 }

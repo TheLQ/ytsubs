@@ -89,12 +89,17 @@ import {
   SubscriptionStorage,
   ChannelGroup,
 } from "../../../server/src/common/util/storage";
+import { GET_API_GROUP } from "../../../server/src/common/routes/ApiGroupRoute";
+import {
+  GET_API_CHANNEL,
+  apiChannelGroup,
+} from "../../../server/src/common/routes/ApiChannelRoute";
 import {
   findOrFail,
   findIndexOrFail,
   stringSort,
 } from "../../../server/src/common/util/langutils";
-import { apiVerify } from "../httputils";
+import { apiGetData, alertAndThrow, apiAction } from "../util/httputils";
 
 interface Channel extends SubscriptionStorage {
   groupsInfo: ChannelGroup[];
@@ -114,29 +119,38 @@ export default defineComponent({
     } as MyData;
   },
   async mounted() {
-    const groupsResponse = await fetch("http://127.0.0.1:3001/api/group");
-    this.groups = await groupsResponse.json();
+    // intentionally do requests sequentually for early exit errors
+    try {
+      const groups = (await apiGetData("GET", GET_API_GROUP)) as ChannelGroup[];
+      this.groups = groups;
+    } catch (e) {
+      alertAndThrow(e, "failed to get groups");
+      return;
+    }
 
-    const channelResponse = await fetch(
-      "http://127.0.0.1:3001/api/subscriptions"
-    );
-    this.channels = await channelResponse.json();
-    this.channels = this.channels.map((entry) => {
-      if (entry.groups) {
-        entry.groupsInfo = entry.groups
-          .split(",")
-          .map((groupNeedle) =>
-            findOrFail(this.groups, (e) => e.groupName == groupNeedle)
-          );
-        entry.groupsInfo.sort((a, b) => stringSort(a.groupName, b.groupName));
-      } else {
-        entry.groupsInfo = [];
-      }
-      return entry;
-    });
+    try {
+      // TS: Comes in as SubscriptionStorage but we add the Channel groupsInfo
+      const channels = (await apiGetData("GET", GET_API_CHANNEL)) as Channel[];
+      this.channels = channels.map((entry) => {
+        if (entry.groups) {
+          entry.groupsInfo = entry.groups
+            .split(",")
+            .map((groupNeedle) =>
+              findOrFail(this.groups, (e) => e.groupName == groupNeedle)
+            );
+          entry.groupsInfo.sort((a, b) => stringSort(a.groupName, b.groupName));
+        } else {
+          entry.groupsInfo = [];
+        }
+        return entry;
+      });
+    } catch (e) {
+      alertAndThrow(e, "failed to get channels");
+      return;
+    }
   },
   methods: {
-    removeChannelGroup(channelId: string, groupName: string) {
+    async removeChannelGroup(channelId: string, groupName: string): Promise<void> {
       const channel = findOrFail(
         this.$data.channels,
         (e) => e.channelId == channelId
@@ -150,17 +164,14 @@ export default defineComponent({
       );
       channel.groupsInfo.splice(groupIndex, 1);
 
-      const fd = new FormData();
-      fd.set("channelId", channelId);
-      fd.set("groupName", groupName);
-      fetch("http://127.0.0.1:3001/api/group/channel", {
-        method: "DELETE",
-        body: fd,
-      })
-        .then(apiVerify)
-        .catch((e) => alert("failed to delete tag" + e));
+      try {
+        await apiAction("DELETE", apiChannelGroup(channelId, groupName));
+      } catch (e) {
+        alertAndThrow(e, "failed to delete channel group");
+        return;
+      }
     },
-    addChannelGroup(channelId: string, event: Event) {
+    async addChannelGroup(channelId: string, event: Event): Promise<void> {
       if (!event.target) {
         throw new Error("state error");
       }
@@ -174,15 +185,12 @@ export default defineComponent({
         findOrFail(this.$data.groups, (e) => e.groupName == groupName)
       );
 
-      const fd = new FormData();
-      fd.set("channelId", channelId);
-      fd.set("groupName", groupName);
-      fetch("http://127.0.0.1:3001/api/group/channel", {
-        method: "POST",
-        body: fd,
-      })
-        .then(apiVerify)
-        .catch((e) => alert("failed to add tag" + e));
+      try {
+        await apiAction("PUT", apiChannelGroup(channelId, groupName));
+      } catch (e) {
+        alertAndThrow(e, "failed to delete channel group");
+        return;
+      }
     },
   },
 });

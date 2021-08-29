@@ -1,17 +1,24 @@
 import express from "express";
 import fs from "fs";
 import {
-  deleteApiGroupChannel,
   getApiGroup,
-  GET_API_GROUP,
-  postApiGroupAdd,
-  postApiGroupChannel,
-  postApiGroupColor,
+  putApiGroup,
+  putApiGroupColor,
 } from "./routes/ApiGroupRoute";
 import {
-  getApiSubscriptions,
-  GET_API_SUBSCRIPTIONS,
-} from "./routes/ApiSubscriptionRoute";
+  API_GROUP,
+  API_GROUP_COLOR,
+  GET_API_GROUP,
+} from "../common/routes/ApiGroupRoute";
+import {
+  getApiChannel,
+  putApiChannelGroup,
+  deleteApiChannelGroup,
+} from "./routes/ApiChannelRoute";
+import {
+  API_CHANNEL_GROUP,
+  GET_API_CHANNEL,
+} from "../common/routes/ApiChannelRoute";
 import { POST_API_VIDEOS } from "../common/routes/ApiVideosRoute";
 import { postApiVideos } from "./routes/ApiVideosRoute";
 import { postYoutubeSubscriptions } from "./routes/ApiYoutubeRoute";
@@ -30,20 +37,17 @@ async function init() {
 
     const context = await Context.create();
 
+    app.use(express.json());
+
     app.use(express.static("../client/dist"));
     // app.use("/client", express.static("dist/client"));
     // app.use("/src", express.static("src"));
 
-    //app.get("/*", prehandle(getVideos, context));
-    //app.post("/", prehandle(postVideos, context));
-
     app.options("/*", prehandle(optionsCors, context));
 
     app.get(GET_API_GROUP, prehandle(getApiGroup, context));
-    app.post("/api/group/add", prehandle(postApiGroupAdd, context));
-    app.post("/api/group/color", prehandle(postApiGroupColor, context));
-    app.post("/api/group/channel", prehandle(postApiGroupChannel, context));
-    app.delete("/api/group/channel", prehandle(deleteApiGroupChannel, context));
+    app.put(API_GROUP, prehandle(putApiGroup, context));
+    app.put(API_GROUP_COLOR, prehandle(putApiGroupColor, context));
 
     app.post(
       "/api/youtube/subscriptions",
@@ -52,9 +56,16 @@ async function init() {
 
     app.post(POST_API_VIDEOS, prehandle(postApiVideos, context));
 
-    app.get(GET_API_SUBSCRIPTIONS, prehandle(getApiSubscriptions, context));
+    app.get(GET_API_CHANNEL, prehandle(getApiChannel, context));
+    app.put(API_CHANNEL_GROUP, prehandle(putApiChannelGroup, context));
+    app.delete(API_CHANNEL_GROUP, prehandle(deleteApiChannelGroup, context));
 
-    app.use(express.json());
+    // Debug print all the routes
+    app._router.stack.forEach(function (r: any) {
+      if (r.route && r.route.path) {
+        console.log(r.route.stack[0].method + "\t" + r.route.path);
+      }
+    });
 
     const bindAddress =
       process.env.USER === "dev" || true ? "0.0.0.0" : "127.0.0.1";
@@ -114,7 +125,7 @@ function setCors(res: express.Response) {
   // Allow the dev web server to connect to this backend server
   // TODO: Set origin to be less restrictive...
   res.setHeader("Access-Control-Allow-Origin", "http://127.0.0.1:3000");
-  res.setHeader("Access-Control-Allow-Methods", "POST, DELETE");
+  res.setHeader("Access-Control-Allow-Methods", "POST, DELETE, PUT");
   res.setHeader("Access-Control-Allow-Headers", "content-type");
 }
 
