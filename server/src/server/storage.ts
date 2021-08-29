@@ -1,8 +1,9 @@
-import _ from "lodash";
+import _, { includes } from "lodash";
 import moment from "moment";
 import { Database, open } from "sqlite";
 import { ISqlite } from "sqlite/build/interfaces";
 import sqlite3 from "sqlite3";
+import { optionsCors } from ".";
 import { WrappedError } from "../common/util/error";
 import {
   ChannelGroup,
@@ -156,9 +157,25 @@ export class Storage {
       let having = "";
       let where = "";
 
-      if (options.group !== undefined) {
-        having = " HAVING groups LIKE ?";
-        sqlPlaceholders.push(`%${options.group}%`);
+      if (options.groups !== undefined && options.groups.length > 0) {
+        if (having == "") {
+          having = " HAVING"
+        }
+        let counter = 0;
+        for (const filter of options.groups) {
+          counter++;
+          if (counter > 1) {
+            having += " AND "
+          }
+
+          if (filter.included) {
+            having += " groups LIKE ?"
+          } else {
+            having += " groups NOT LIKE ?"
+          }
+          sqlPlaceholders.push(`%${filter.name}%`);  
+          
+        }
       }
 
       if (options.channelId !== undefined) {
@@ -180,6 +197,7 @@ export class Storage {
       LIMIT ?
       `;
       sqlPlaceholders.push(options.limit);
+      console.log("sql", sql)
 
       const result = await this.db.all(sql, sqlPlaceholders);
       for (const row of result) {

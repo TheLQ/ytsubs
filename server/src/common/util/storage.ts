@@ -26,14 +26,21 @@ export interface ChannelGroupMapping {
   groupName: string;
 }
 
+export interface GetChannelOptions {
+  notUpdatedIn?: string;
+}
+
+/* getVideos */
+
 export interface GetVideoOptions {
-  group?: string;
+  groups?: GroupFilter[];
   channelId?: string;
   limit?: number;
 }
 
-export interface GetChannelOptions {
-  notUpdatedIn?: string;
+export interface GroupFilter {
+  name: string;
+  included: boolean;
 }
 
 export interface GetVideosResult extends SubscriptionStorage, VideoStorage {

@@ -82,13 +82,13 @@
 import { ref, defineComponent, PropType } from "vue";
 
 import {
-  GroupFilter,
   POST_API_VIDEOS,
   VideosRequest,
 } from "../../../server/src/common/routes/ApiVideosRoute";
 import { GET_API_GROUP } from "../../../server/src/common/routes/ApiGroupRoute";
 import { findIndexOrFail } from "../../../server/src/common/util/langutils";
 import {
+  GroupFilter,
   GetVideosResult,
   ChannelGroup,
 } from "../../../server/src/common/util/storage";
@@ -153,9 +153,6 @@ export default defineComponent({
       }
     },
     groupFilterApply(included: boolean, event: MouseEvent) {
-      // stop form submission
-      event.preventDefault();
-
       if (this.groupFilterSelected == "") {
         alert("no element selected");
         return;
@@ -174,6 +171,8 @@ export default defineComponent({
         (e) => e.name == name
       );
       this.groupFilterApplied.splice(groupIndex, 1);
+
+      return this.refreshVideos();
     },
   },
 });
