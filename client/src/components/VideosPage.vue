@@ -42,9 +42,9 @@
       <div>
         <label>
           Upload Date After
-          <input type="date" />
+          <input type="date" v-model="dateFilterSelected" />
         </label>
-        <button>Apply</button>
+        <button @click="dateFilterApply">Apply</button>
       </div>
       <hr />
       <div>
@@ -69,7 +69,11 @@
             video.channelName
           }}</a>
         </div>
-        <div class="video-published">{{ video.publishedRelative }}</div>
+        <div class="video-published">
+          <span v-bind:title="video.published">{{
+            video.publishedRelative
+          }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -96,6 +100,8 @@ interface MyData {
   videos: GetVideosResult[];
   groupFilterSelected: string;
   groupFilterApplied: GroupFilter[];
+  dateFilterSelected: string | null;
+  dateFilterApplied: string | null;
 }
 
 export default defineComponent({
@@ -106,6 +112,8 @@ export default defineComponent({
       videos: [],
       groupFilterSelected: "",
       groupFilterApplied: [],
+      dateFilterSelected: null,
+      dateFilterApplied: null,
     } as MyData;
   },
   computed: {
@@ -137,6 +145,8 @@ export default defineComponent({
       try {
         const reqJson: VideosRequest = {
           groups: this.groupFilterApplied,
+          publishedAfter:
+            this.dateFilterApplied == null ? undefined : this.dateFilterApplied,
         };
         const result = (await apiSendData(
           "POST",
@@ -149,7 +159,7 @@ export default defineComponent({
         return;
       }
     },
-    groupFilterApply(included: boolean, event: MouseEvent) {
+    async groupFilterApply(included: boolean, event: MouseEvent) {
       if (this.groupFilterSelected == "") {
         alert("no element selected");
         return;
@@ -158,9 +168,10 @@ export default defineComponent({
         name: this.groupFilterSelected,
         included,
       });
-      this.groupFilterSelected = "";
 
-      return this.refreshVideos();
+      await this.refreshVideos();
+
+      this.groupFilterSelected = "";
     },
     groupFilterRemove(name: string) {
       const groupIndex = findIndexOrFail(
@@ -170,6 +181,18 @@ export default defineComponent({
       this.groupFilterApplied.splice(groupIndex, 1);
 
       return this.refreshVideos();
+    },
+    async dateFilterApply() {
+      if (this.dateFilterSelected == null) {
+        alert("no date selected");
+        return;
+      }
+
+      this.dateFilterApplied = this.dateFilterSelected;
+
+      await this.refreshVideos();
+
+      this.dateFilterSelected = null;
     },
   },
 });

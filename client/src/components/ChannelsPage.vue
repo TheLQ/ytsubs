@@ -9,30 +9,24 @@
             >Youtube Subscription Manager</a
           >
           <input type="file" name="xml" />
-          <button name="uploadSubscriptions">
-            Upload Subscriptions
-          </button>
+          <button name="uploadSubscriptions">Upload Subscriptions</button>
         </label>
       </div>
-      <hr/>
+      <hr />
       <div>
         <label>
           Check Youtube Auth
-          <button name="checkYoutubeAuth">
-            Check Youtube Auth
-          </button>
+          <button name="checkYoutubeAuth">Check Youtube Auth</button>
         </label>
       </div>
-      <hr/>
+      <hr />
       <div>
         <label>
           Sync Subscriptions
-          <button name="syncSubscriptions">
-            Upload Subscriptions
-          </button>
+          <button name="syncSubscriptions">Upload Subscriptions</button>
         </label>
       </div>
-      <hr/>
+      <hr />
       <div>
         <label>
           Add group
@@ -40,7 +34,7 @@
           <button name="addGroup">Add Group</button>
         </label>
       </div>
-      <hr/>
+      <hr />
       <div>
         <select v-model="groupColorName">
           <option></option>
@@ -72,9 +66,7 @@
             x
           </button>
         </div>
-        <select
-          @change="addChannelGroup(channel.channelId, $event)"
-        >
+        <select @change="addChannelGroup(channel.channelId, $event)">
           <option value></option>
           <option v-for="group of groups">
             {{ group.groupName }}
@@ -91,7 +83,10 @@ import {
   SubscriptionStorage,
   ChannelGroup,
 } from "../../../server/src/common/util/storage";
-import { apiGroupColor, GET_API_GROUP } from "../../../server/src/common/routes/ApiGroupRoute";
+import {
+  apiGroupColor,
+  GET_API_GROUP,
+} from "../../../server/src/common/routes/ApiGroupRoute";
 import {
   GET_API_CHANNEL,
   apiChannelGroup,
@@ -168,7 +163,10 @@ export default defineComponent({
       }
       const color = this.groupColorValue.substring(1);
 
-      const group = findOrFail(this.groups, e => e.groupName == this.groupColorName);
+      const group = findOrFail(
+        this.groups,
+        (e) => e.groupName == this.groupColorName
+      );
       group.color = color;
 
       try {

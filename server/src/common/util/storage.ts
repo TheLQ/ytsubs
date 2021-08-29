@@ -36,6 +36,7 @@ export interface GetVideoOptions {
   groups?: GroupFilter[];
   channelId?: string;
   limit?: number;
+  publishedAfter?: string;
 }
 
 export interface GroupFilter {

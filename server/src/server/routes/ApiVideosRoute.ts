@@ -10,10 +10,9 @@ export async function postApiVideos(
   const body = req.body as VideosRequest;
   console.log("body", body);
 
-  const videos = await context.db.getVideos({
-    limit: 100,
-    groups: body.groups,
-  });
+  body.limit = 100;
+
+  const videos = await context.db.getVideos(body);
   res.type("json");
   res.end(JSON.stringify(videos));
 }

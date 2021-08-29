@@ -154,33 +154,36 @@ export class Storage {
     let sql = "";
     try {
       const sqlPlaceholders: any[] = [];
-      let having = "";
-      let where = "";
 
+      const havingConditions: string[] = [];
       if (options.groups !== undefined && options.groups.length > 0) {
-        if (having == "") {
-          having = " HAVING";
-        }
-        let counter = 0;
         for (const filter of options.groups) {
-          counter++;
-          if (counter > 1) {
-            having += " AND ";
-          }
-
           if (filter.included) {
-            having += " groups LIKE ?";
+            havingConditions.push("groups LIKE ?");
           } else {
-            having += " groups NOT LIKE ?";
+            havingConditions.push("groups NOT LIKE ?");
           }
           sqlPlaceholders.push(`%${filter.name}%`);
         }
       }
+      const havingQuery =
+        havingConditions.length == 0
+          ? ""
+          : " HAVING " + havingConditions.join(" AND ");
 
+      const whereConditions: string[] = [];
       if (options.channelId !== undefined) {
-        where = " WHERE videos.channelId = ?";
+        whereConditions.push("videos.channelId = ?");
         sqlPlaceholders.push(options.channelId);
       }
+      if (options.publishedAfter !== undefined) {
+        whereConditions.push("datetime(published) < ?");
+        sqlPlaceholders.push(options.publishedAfter);
+      }
+      const whereQuery =
+        whereConditions.length == 0
+          ? ""
+          : " WHERE " + whereConditions.join(" AND ");
 
       sql = `
       SELECT
@@ -189,9 +192,9 @@ export class Storage {
       FROM videos
       LEFT JOIN channelGroupMap USING (channelId)
       LEFT JOIN subscriptions USING (channelId)
-      ${where}
+      ${whereQuery}
       GROUP BY videos.videoId
-      ${having}
+      ${havingQuery}
       ORDER BY datetime(published) DESC
       LIMIT ?
       `;
