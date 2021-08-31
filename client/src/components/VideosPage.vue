@@ -56,6 +56,13 @@
       </div>
       <hr />
       <div>
+        <label
+          >Limit
+          <input type="number" v-model="sizeSelected" @change="sizeApply()"
+        /></label>
+      </div>
+      <hr />
+      <div>
         <button name="downloadFeeds">Download channel feeds</button>
       </div>
     </form>
@@ -125,6 +132,7 @@ interface MyData {
   groupFilterApplied: GroupFilter[];
   dateFilterSelected: string | null;
   dateFilterApplied: string | null;
+  sizeSelected: number;
 }
 
 export default defineComponent({
@@ -137,6 +145,7 @@ export default defineComponent({
       groupFilterApplied: [],
       dateFilterSelected: null,
       dateFilterApplied: null,
+      sizeSelected: 25,
     } as MyData;
   },
   computed: {
@@ -180,6 +189,7 @@ export default defineComponent({
           groups: this.groupFilterApplied,
           publishedAfter:
             this.dateFilterApplied == null ? undefined : this.dateFilterApplied,
+          limit: this.sizeSelected,
         };
         // everything is proxied so stringify
         console.log("loading videos", JSON.stringify(reqJson));
@@ -264,6 +274,16 @@ export default defineComponent({
         ...this.$router.currentRoute.value.query,
       };
       delete query.dateFilter;
+      this.$router.replace({ query });
+
+      await this.refreshVideos();
+    },
+    async sizeApply() {
+      const query = {
+        ...this.$router.currentRoute.value.query,
+        size: this.sizeSelected,
+      };
+      this.$router.replace({ query });
 
       await this.refreshVideos();
     },
@@ -307,6 +327,9 @@ export default defineComponent({
       }
       if ("dateFilter" in query) {
         this.dateFilterApplied = query["dateFilter"] as string;
+      }
+      if ("size" in query) {
+        this.sizeSelected = Number.parseInt(query["size"] as string, 10);
       }
     },
   },
