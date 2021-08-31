@@ -1,6 +1,6 @@
 <template>
   <div id="sidebar">
-    <form>
+    <form id="sidebar-floating">
       <div>
         <label>
           Groups
@@ -47,9 +47,10 @@
         <button @click="dateFilterApply">Apply</button>
         <div v-if="dateFilterApplied != null">
           <ul>
-            <li><button alt="Remove" @click="dateFilterRemove()">
-              x
-            </button>{{ dateFilterApplied }}</li>
+            <li>
+              <button alt="Remove" @click="dateFilterRemove()">x</button
+              >{{ dateFilterApplied }}
+            </li>
           </ul>
         </div>
       </div>
@@ -263,17 +264,15 @@ export default defineComponent({
         ...this.$router.currentRoute.value.query,
       };
       delete query.dateFilter;
-      
+
       await this.refreshVideos();
     },
     //
     getGroupColorStyle(name: string): string {
-      const color = findOrFail(this.groups, e => e.groupName == name).color;
+      const color = findOrFail(this.groups, (e) => e.groupName == name).color;
       if (color != null) {
-        console.log(name + " group" + " color " + color)
         return "background-color: #" + color;
       } else {
-        console.log(name + " group no color")
         return "";
       }
     },
