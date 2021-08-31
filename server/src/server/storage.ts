@@ -177,7 +177,8 @@ export class Storage {
         sqlPlaceholders.push(options.channelId);
       }
       if (options.publishedAfter !== undefined) {
-        whereConditions.push("datetime(published) < ?");
+        whereConditions.push("datetime(published) < datetime(?)");
+        console.log("date " + options.publishedAfter);
         sqlPlaceholders.push(options.publishedAfter);
       }
       const whereQuery =

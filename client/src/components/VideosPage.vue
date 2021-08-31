@@ -63,6 +63,13 @@
       </div>
       <hr />
       <div>
+        <label>Page control</label>
+        <button @click="pageFirst()">First</button>
+        <button alt="Previous">&lt;</button>
+        <button alt="Next" @click="pageNext()">&gt;</button>
+      </div>
+      <hr />
+      <div>
         <button name="downloadFeeds">Download channel feeds</button>
       </div>
     </form>
@@ -284,6 +291,33 @@ export default defineComponent({
         size: this.sizeSelected,
       };
       this.$router.replace({ query });
+
+      await this.refreshVideos();
+    },
+    async pageFirst() {
+      this.dateFilterApplied = null;
+
+      const query = {
+        ...this.$router.currentRoute.value.query,
+      };
+      if (!("dateFilter" in query)) {
+        // already no filter
+        return;
+      }
+      delete query.dateFilter;
+      this.$router.replace({ query });
+
+      await this.refreshVideos();
+    },
+    async pageNext() {
+      const lastVideo = this.videos[this.videos.length - 1];
+      const query = {
+        ...this.$router.currentRoute.value.query,
+        dateFilter: lastVideo.published,
+      };
+      this.$router.replace({ query });
+
+      this.dateFilterApplied = lastVideo.published;
 
       await this.refreshVideos();
     },
