@@ -54,6 +54,14 @@ export function findIndexOrFail<T>(
   return res;
 }
 
+export function removeOrFail<T>(
+  arr: Array<T>,
+  predicate: (entry: T) => boolean
+): void {
+  const index = findIndexOrFail(arr, predicate);
+  arr.splice(index, 1);
+}
+
 export function stringSort(a: string, b: string) {
   const nameA = a.toUpperCase();
   const nameB = b.toUpperCase();

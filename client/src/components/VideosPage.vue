@@ -41,10 +41,15 @@
       <hr />
       <div>
         <label>
-          Upload Date After
+          Upload Date Before
           <input type="date" v-model="dateFilterSelected" />
         </label>
         <button @click="dateFilterApply">Apply</button>
+        <div v-if="dateFilterApplied != null">
+          <ul>
+            <li>{{ dateFilterApplied }}</li>
+          </ul>
+        </div>
       </div>
       <hr />
       <div>
@@ -87,13 +92,22 @@ import {
   VideosRequest,
 } from "../../../server/src/common/routes/ApiVideosRoute";
 import { GET_API_GROUP } from "../../../server/src/common/routes/ApiGroupRoute";
-import { findIndexOrFail } from "../../../server/src/common/util/langutils";
+import {
+  findIndexOrFail,
+  removeOrFail,
+} from "../../../server/src/common/util/langutils";
 import {
   GroupFilter,
   GetVideosResult,
   ChannelGroup,
 } from "../../../server/src/common/util/storage";
-import { apiGetData, apiSendData, alertAndThrow } from "../util/httputils";
+import {
+  apiGetData,
+  apiSendData,
+  alertAndThrow,
+  changeQueryArray,
+} from "../util/httputils";
+import { LocationQueryValue } from "vue-router";
 
 interface MyData {
   groups: ChannelGroup[];
@@ -129,6 +143,7 @@ export default defineComponent({
     },
   },
   async mounted() {
+    console.log("mounted");
     // intentionally do requests sequentually for early exit errors
     try {
       const groups = (await apiGetData("GET", GET_API_GROUP)) as ChannelGroup[];
@@ -138,7 +153,16 @@ export default defineComponent({
       return;
     }
 
+    this._loadParams();
+
     await this.refreshVideos();
+  },
+  watch: {
+    $route(to, from) {
+      // console.log("route change")
+      // this._loadParams();
+      // this.refreshVideos();
+    },
   },
   methods: {
     async refreshVideos(): Promise<void> {
@@ -148,6 +172,8 @@ export default defineComponent({
           publishedAfter:
             this.dateFilterApplied == null ? undefined : this.dateFilterApplied,
         };
+        // everything is proxied so stringify
+        console.log("loading videos", JSON.stringify(reqJson));
         const result = (await apiSendData(
           "POST",
           POST_API_VIDEOS,
@@ -169,6 +195,16 @@ export default defineComponent({
         included,
       });
 
+      // remove group name from query
+      const query = { ...this.$router.currentRoute.value.query };
+      changeQueryArray(
+        query,
+        included ? "groupInclude" : "groupExclude",
+        this.groupFilterSelected,
+        true
+      );
+      this.$router.replace({ query });
+
       await this.refreshVideos();
 
       this.groupFilterSelected = "";
@@ -178,7 +214,18 @@ export default defineComponent({
         this.groupFilterApplied,
         (e) => e.name == name
       );
+      const group = this.groupFilterApplied[groupIndex];
       this.groupFilterApplied.splice(groupIndex, 1);
+
+      // remove group name from query
+      const query = { ...this.$router.currentRoute.value.query };
+      changeQueryArray(
+        query,
+        group.included ? "groupInclude" : "groupExclude",
+        group.name,
+        false
+      );
+      this.$router.replace({ query });
 
       return this.refreshVideos();
     },
@@ -190,9 +237,47 @@ export default defineComponent({
 
       this.dateFilterApplied = this.dateFilterSelected;
 
+      const query = {
+        ...this.$router.currentRoute.value.query,
+        dateFilter: this.dateFilterApplied,
+      };
+      this.$router.replace({ query });
+
       await this.refreshVideos();
 
       this.dateFilterSelected = null;
+    },
+    _loadParams() {
+      const query = this.$router.currentRoute.value.query;
+      if ("groupInclude" in query) {
+        for (const groupName of (query["groupInclude"] as string).split(",")) {
+          if (
+            this.groupFilterApplied.find((e) => e.name == groupName) ==
+            undefined
+          ) {
+            this.groupFilterApplied.push({
+              name: groupName,
+              included: true,
+            });
+          }
+        }
+      }
+      if ("groupExclude" in query) {
+        for (const groupName of (query["groupExclude"] as string).split(",")) {
+          if (
+            this.groupFilterApplied.find((e) => e.name == groupName) ==
+            undefined
+          ) {
+            this.groupFilterApplied.push({
+              name: groupName,
+              included: false,
+            });
+          }
+        }
+      }
+      if ("dateFilter" in query) {
+        this.dateFilterApplied = query["dateFilter"] as string;
+      }
     },
   },
 });

@@ -1,4 +1,6 @@
+import { LocationQuery } from "vue-router";
 import { WrappedError } from "../../../server/src/common/util/error";
+import { removeOrFail } from "../../../server/src/common/util/langutils";
 
 /**
  * send json to api call, api call returns json on success
@@ -65,4 +67,29 @@ export function alertAndThrow(e: any, message: string) {
 
   alert(message + "\n" + e);
   throw e;
+}
+
+export function changeQueryArray(
+  query: LocationQuery,
+  key: string,
+  value: string,
+  add: boolean
+) {
+  let rawValue = "";
+  if (Object.prototype.hasOwnProperty.call(query, key)) {
+    rawValue = query[key] as string;
+  }
+
+  let arr = rawValue != "" ? rawValue.split(",") : [];
+  if (add) {
+    arr.push(value);
+  } else {
+    removeOrFail(arr, (e) => e == value);
+  }
+
+  if (arr.length != 0) {
+    query[key] = arr.join(",");
+  } else {
+    delete query[key];
+  }
 }
