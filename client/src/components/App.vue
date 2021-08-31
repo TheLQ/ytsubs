@@ -1,11 +1,13 @@
 <template>
-  <nav id="navbar">
+  <header>
     <h1 id="appname">ytsubs</h1>
 
-    <router-link to="/">Videos</router-link>
-    <span>|</span>
-    <router-link to="/channels">Channels</router-link>
-  </nav>
+    <nav>
+      <router-link to="/">Videos</router-link>
+      <span>|</span>
+      <router-link to="/channels">Channels</router-link>
+    </nav>
+  </header>
   <div id="content">
     <router-view></router-view>
   </div>
@@ -26,16 +28,16 @@ export default defineComponent({
 </script>
 
 <style>
-#navbar {
+header {
   background-color: gray;
 }
 
-#navbar #appname {
+header #appname {
   display: inline;
   margin: 20px;
 }
 
-#navbar .router-link-active {
+header .router-link-active {
   height: 100%;
   background-color: lightgray;
 }

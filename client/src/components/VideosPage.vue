@@ -74,7 +74,7 @@
       </div>
     </form>
   </div>
-  <div id="content">
+  <main>
     <div class="video-container">
       <div v-for="video in videos" class="video-box">
         <a
@@ -103,7 +103,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </main>
 </template>
 
 <script lang="ts">

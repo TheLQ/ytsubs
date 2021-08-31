@@ -47,7 +47,7 @@
       </div>
     </form>
   </div>
-  <div id="content">
+  <main>
     <ul>
       <li v-for="channel of channels">
         <a :href="'https://www.youtube.com/channel/' + channel.channelId">{{
@@ -74,7 +74,7 @@
         </select>
       </li>
     </ul>
-  </div>
+  </main>
 </template>
 
 <script lang="ts">
