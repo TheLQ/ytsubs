@@ -8,3 +8,8 @@
   flex-grow: 999;
   min-width: 50%;
 }
+
+.channel-tag {
+  display: inline;
+  border: 1px solid black;
+}

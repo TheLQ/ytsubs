@@ -228,10 +228,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.channel-tag {
-  display: inline;
-}
-
 .group-channel-add-form {
   display: inline;
 }

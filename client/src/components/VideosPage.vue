@@ -81,6 +81,11 @@
             video.publishedRelative
           }}</span>
         </div>
+        <div v-for="group of video.groups?.split(',')">
+          <div class="channel-tag" :style="getGroupColorStyle(group)">
+            {{ group }}
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -96,6 +101,7 @@ import {
 import { GET_API_GROUP } from "../../../server/src/common/routes/ApiGroupRoute";
 import {
   findIndexOrFail,
+  findOrFail,
   removeOrFail,
 } from "../../../server/src/common/util/langutils";
 import {
@@ -260,6 +266,18 @@ export default defineComponent({
       
       await this.refreshVideos();
     },
+    //
+    getGroupColorStyle(name: string): string {
+      const color = findOrFail(this.groups, e => e.groupName == name).color;
+      if (color != null) {
+        console.log(name + " group" + " color " + color)
+        return "background-color: #" + color;
+      } else {
+        console.log(name + " group no color")
+        return "";
+      }
+    },
+    //
     _loadParams() {
       const query = this.$router.currentRoute.value.query;
       if ("groupInclude" in query) {
