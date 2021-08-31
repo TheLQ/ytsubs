@@ -47,7 +47,9 @@
         <button @click="dateFilterApply">Apply</button>
         <div v-if="dateFilterApplied != null">
           <ul>
-            <li>{{ dateFilterApplied }}</li>
+            <li><button alt="Remove" @click="dateFilterRemove()">
+              x
+            </button>{{ dateFilterApplied }}</li>
           </ul>
         </div>
       </div>
@@ -246,6 +248,17 @@ export default defineComponent({
       await this.refreshVideos();
 
       this.dateFilterSelected = null;
+    },
+    async dateFilterRemove() {
+      this.dateFilterApplied = null;
+
+      // update query
+      const query = {
+        ...this.$router.currentRoute.value.query,
+      };
+      delete query.dateFilter;
+      
+      await this.refreshVideos();
     },
     _loadParams() {
       const query = this.$router.currentRoute.value.query;
