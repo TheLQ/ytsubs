@@ -9,21 +9,27 @@
             >Youtube Subscription Manager</a
           >
           <input type="file" name="xml" />
-          <button name="uploadSubscriptions">Upload Subscriptions</button>
+          <button type="button" name="uploadSubscriptions">
+            Upload Subscriptions
+          </button>
         </label>
       </div>
       <hr />
       <div>
         <label>
           Check Youtube Auth
-          <button name="checkYoutubeAuth">Check Youtube Auth</button>
+          <button type="button" name="checkYoutubeAuth">
+            Check Youtube Auth
+          </button>
         </label>
       </div>
       <hr />
       <div>
         <label>
           Sync Subscriptions
-          <button name="syncSubscriptions">Upload Subscriptions</button>
+          <button type="button" name="syncSubscriptions">
+            Upload Subscriptions
+          </button>
         </label>
       </div>
       <hr />
@@ -31,7 +37,7 @@
         <label>
           Add group
           <input type="text" name="groupName" />
-          <button name="addGroup">Add Group</button>
+          <button type="button" name="addGroup">Add Group</button>
         </label>
       </div>
       <hr />
@@ -43,7 +49,9 @@
           </option>
         </select>
         <input type="color" v-model="groupColorValue" />
-        <button @click.prevent="setGroupColor()">Set Group Color</button>
+        <button type="button" @click.prevent="setGroupColor()">
+          Set Group Color
+        </button>
       </div>
     </form>
   </div>
@@ -61,6 +69,7 @@
         >
           {{ group.groupName }}
           <button
+            type="button"
             @click="removeChannelGroup(channel.channelId, group.groupName)"
           >
             x

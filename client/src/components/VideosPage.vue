@@ -14,11 +14,19 @@
             </option>
           </select>
         </label>
-        <button @click="groupFilterApply(true, $event)">Include</button>
-        <button @click="groupFilterApply(false, $event)">Exclude</button>
+        <button type="button" @click="groupFilterApply(true, $event)">
+          Include
+        </button>
+        <button type="button" @click="groupFilterApply(false, $event)">
+          Exclude
+        </button>
         <ul>
           <li v-for="group of groupFilterApplied">
-            <button alt="Remove" @click="groupFilterRemove(group.name)">
+            <button
+              type="button"
+              alt="Remove"
+              @click="groupFilterRemove(group.name)"
+            >
               x
             </button>
             {{ group.included ? "+" : "-" }} {{ group.name }}
@@ -36,7 +44,7 @@
             <option>&lt;10 6 months</option>
           </select>
         </label>
-        <button>Apply</button>
+        <button type="button">Apply</button>
       </div>
       <hr />
       <div>
@@ -44,11 +52,12 @@
           Upload Date Before
           <input type="date" v-model="dateFilterSelected" />
         </label>
-        <button @click="dateFilterApply">Apply</button>
+        <button type="button" @click="dateFilterApply">Apply</button>
         <div v-if="dateFilterApplied != null">
           <ul>
             <li>
-              <button alt="Remove" @click="dateFilterRemove()">x</button
+              <button type="button" alt="Remove" @click="dateFilterRemove()">
+                x</button
               >{{ dateFilterApplied }}
             </li>
           </ul>
@@ -64,15 +73,17 @@
       <hr />
       <div>
         <label>Page control</label>
-        <button @click="pageFirst()">First</button>
-        <button alt="Previous">&lt;</button>
-        <button alt="Next" @click="pageNext()">&gt;</button>
+        <button type="button" @click="pageFirst()">First</button>
+        <button type="button" alt="Previous">&lt;</button>
+        <button type="button" alt="Next" @click="pageNext()">&gt;</button>
       </div>
       <hr />
     </form>
     <form v-bind:action="channelUpdateUrl" method="POST">
       <div>
-        <button name="downloadFeeds">Download channel feeds</button>
+        <button type="submit" name="downloadFeeds">
+          Download channel feeds
+        </button>
       </div>
     </form>
   </div>
