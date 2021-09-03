@@ -69,6 +69,8 @@
         <button alt="Next" @click="pageNext()">&gt;</button>
       </div>
       <hr />
+    </form>
+    <form v-bind:action="channelUpdateUrl" method="POST">
       <div>
         <button name="downloadFeeds">Download channel feeds</button>
       </div>
@@ -114,6 +116,7 @@ import {
   VideosRequest,
 } from "../../../server/src/common/routes/ApiVideosRoute";
 import { GET_API_GROUP } from "../../../server/src/common/routes/ApiGroupRoute";
+import { POST_YOUTUBE_CHANNELS_UPDATE } from "../../../server/src/common/routes/ApiYoutubeRoute";
 import {
   findIndexOrFail,
   findOrFail,
@@ -140,6 +143,7 @@ interface MyData {
   dateFilterSelected: string | null;
   dateFilterApplied: string | null;
   sizeSelected: number;
+  channelUpdateUrl: string;
 }
 
 export default defineComponent({
@@ -153,6 +157,7 @@ export default defineComponent({
       dateFilterSelected: null,
       dateFilterApplied: null,
       sizeSelected: 25,
+      channelUpdateUrl: "http://127.0.0.1:3001" + POST_YOUTUBE_CHANNELS_UPDATE,
     } as MyData;
   },
   computed: {

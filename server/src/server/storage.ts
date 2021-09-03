@@ -178,7 +178,6 @@ export class Storage {
       }
       if (options.publishedAfter !== undefined) {
         whereConditions.push("datetime(published) < datetime(?)");
-        console.log("date " + options.publishedAfter);
         sqlPlaceholders.push(options.publishedAfter);
       }
       const whereQuery =
@@ -200,7 +199,6 @@ export class Storage {
       LIMIT ?
       `;
       sqlPlaceholders.push(options.limit);
-      console.log("sql", sql);
 
       const result = await this.db.all(sql, sqlPlaceholders);
       for (const row of result) {

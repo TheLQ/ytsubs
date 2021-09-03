@@ -8,7 +8,6 @@ export async function postApiVideos(
   context: Context
 ): Promise<void> {
   const body = req.body as VideosRequest;
-  console.log("body", body);
 
   const videos = await context.db.getVideos(body);
   res.type("json");

@@ -21,11 +21,18 @@ import {
 } from "../common/routes/ApiChannelRoute";
 import { POST_API_VIDEOS } from "../common/routes/ApiVideosRoute";
 import { postApiVideos } from "./routes/ApiVideosRoute";
-import { postYoutubeSubscriptions } from "./routes/ApiYoutubeRoute";
+import {
+  postYoutubeChannels,
+  postYoutubeChannelsUpdate,
+} from "./routes/ApiYoutubeRoute";
 import * as error from "../common/util/error";
 import logger from "./util/logger";
 import { Storage } from "./storage";
 import { parseSubscriptionsOpml } from "./util/youtubeUtils";
+import {
+  POST_YOUTUBE_CHANNELS,
+  POST_YOUTUBE_CHANNELS_UPDATE,
+} from "../common/routes/ApiYoutubeRoute";
 
 const log = logger("server");
 log.info("Starting app");
@@ -49,9 +56,10 @@ async function init() {
     app.put(API_GROUP, prehandle(putApiGroup, context));
     app.put(API_GROUP_COLOR, prehandle(putApiGroupColor, context));
 
+    app.post(POST_YOUTUBE_CHANNELS, prehandle(postYoutubeChannels, context));
     app.post(
-      "/api/youtube/subscriptions",
-      prehandle(postYoutubeSubscriptions, context)
+      POST_YOUTUBE_CHANNELS_UPDATE,
+      prehandle(postYoutubeChannelsUpdate, context)
     );
 
     app.post(POST_API_VIDEOS, prehandle(postApiVideos, context));
