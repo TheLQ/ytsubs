@@ -1,3 +1,5 @@
+export const GROUP_MAGIC_NONE = "(none)";
+
 export interface VideoStorage {
   videoId: string;
   channelId: string;

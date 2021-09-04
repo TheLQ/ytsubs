@@ -1,4 +1,4 @@
-import _, { includes } from "lodash";
+import _, { cond, includes } from "lodash";
 import moment from "moment";
 import { Database, open } from "sqlite";
 import { ISqlite } from "sqlite/build/interfaces";
@@ -14,7 +14,13 @@ import {
   GetVideosResult,
   SubscriptionStorageSimple,
   SubscriptionStorage,
+  GROUP_MAGIC_NONE,
 } from "../common/util/storage";
+import util from "util";
+import e from "express";
+import logger from "./util/logger";
+
+const log = logger("server/storage");
 
 type DB = Database;
 
@@ -157,13 +163,33 @@ export class Storage {
 
       const havingConditions: string[] = [];
       if (options.groups !== undefined && options.groups.length > 0) {
+        // Include = *any* channel contains the groups
+        // Exclude = *no* channel contains the groups
+        const havingIncluded = [];
+        const havingExcluded = [];
         for (const filter of options.groups) {
-          if (filter.included) {
-            havingConditions.push("groups LIKE ?");
+          if (filter.name == GROUP_MAGIC_NONE) {
+            if (filter.included) {
+              havingIncluded.push("groups IS NULL");
+            } else {
+              havingExcluded.push("groups IS NOT NULL");
+            }
           } else {
-            havingConditions.push("groups NOT LIKE ?");
+            if (filter.included) {
+              havingIncluded.push("groups LIKE ?");
+            } else {
+              havingExcluded.push("groups NOT LIKE ?");
+            }
+            sqlPlaceholders.push(`%${filter.name}%`);
           }
-          sqlPlaceholders.push(`%${filter.name}%`);
+        }
+
+        if (havingIncluded.length > 0) {
+          havingConditions.push("(" + havingIncluded.join(" OR ") + ")");
+        }
+        // having is joined with AND so re-use it
+        for (const excluded of havingExcluded) {
+          havingConditions.push(excluded);
         }
       }
       const havingQuery =
@@ -200,7 +226,11 @@ export class Storage {
       `;
       sqlPlaceholders.push(options.limit);
 
+      log.debug("sql" + sql);
+      log.debug("place \n" + sqlPlaceholders.join("\n"));
+
       const result = await this.db.all(sql, sqlPlaceholders);
+      log.debug("returned " + result.length);
       for (const row of result) {
         row.publishedRelative = moment(row.published).fromNow();
       }

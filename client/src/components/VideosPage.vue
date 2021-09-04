@@ -1,26 +1,29 @@
 <template>
   <div id="sidebar">
     <form id="sidebar-floating">
-      <GroupSelector name="Include Groups" @new-group-selected="groupsIncludeUpdate" @new-groups="groupsUpdate"/>
-      <hr />
-      <div>
-        <label>
-          Upload Frequency
-          <select>
-            <option></option>
-            <option>&lt;5 past month</option>
-            <option>&lt;5 6 months</option>
-            <option>&lt;10 6 months</option>
-          </select>
-        </label>
+      <GroupSelector
+        name="Include Groups"
+        v-bind:initial-all-selected="false"
+        v-bind:add-none-group="true"
+        query-parameter="groupsInclude"
+        @new-group-selected="groupsIncludeUpdate"
+        @new-groups="groupsUpdate"
+      />
+
+      <fieldset>
+        <legend>Upload Frequency</legend>
+        <select>
+          <option></option>
+          <option>&lt;5 past month</option>
+          <option>&lt;5 6 months</option>
+          <option>&lt;10 6 months</option>
+        </select>
         <button type="button">Apply</button>
-      </div>
-      <hr />
-      <div>
-        <label>
-          Upload Date Before
-          <input type="date" v-model="dateFilterSelected" />
-        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Upload Date Before</legend>
+        <input type="date" v-model="dateFilterSelected" />
         <button type="button" @click="dateFilterApply">Apply</button>
         <div v-if="dateFilterApplied != null">
           <ul>
@@ -31,22 +34,19 @@
             </li>
           </ul>
         </div>
-      </div>
-      <hr />
-      <div>
-        <label
-          >Limit
-          <input type="number" v-model="sizeSelected" @change="sizeApply()"
-        /></label>
-      </div>
-      <hr />
-      <div>
-        <label>Page control</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Limit</legend>
+        <input type="number" v-model="sizeSelected" @change="sizeApply()" />
+      </fieldset>
+
+      <fieldset>
+        <legend>Page control</legend>
         <button type="button" @click="pageFirst()">First</button>
         <button type="button" alt="Previous">&lt;</button>
         <button type="button" alt="Next" @click="pageNext()">&gt;</button>
-      </div>
-      <hr />
+      </fieldset>
     </form>
     <form v-bind:action="channelUpdateUrl" method="POST">
       <div>
@@ -183,7 +183,9 @@ export default defineComponent({
      * New filter is applied, refresh
      */
     async groupsIncludeUpdate(groupFilter: string[]) {
-      this.groupFilterApplied = groupFilter.map(e => { return {name: e, included: true }});
+      this.groupFilterApplied = groupFilter.map((e) => {
+        return { name: e, included: true };
+      });
       this.refreshVideos();
     },
     /**
@@ -192,7 +194,7 @@ export default defineComponent({
     async groupsUpdate(groups: ChannelGroup[]) {
       this.groups = groups;
 
-      // If this is the first page load, our groups array is empty. 
+      // If this is the first page load, our groups array is empty.
       // Pull from this component then load videos
       // TODO: this may cause unnessary refreshes if the group filter truely returns empty results
       if (this.videos.length == 0) {
