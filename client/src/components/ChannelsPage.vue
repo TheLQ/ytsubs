@@ -36,8 +36,8 @@
       <div>
         <label>
           Add group
-          <input type="text" name="groupName" />
-          <button type="button" name="addGroup">Add Group</button>
+          <input type="text" v-model="addGroupName" />
+          <button type="button">Add Group</button>
         </label>
       </div>
       <hr />
@@ -87,7 +87,7 @@
 </template>
 
 <script lang="ts">
-import { ref, defineComponent, registerRuntimeCompiler } from "vue";
+import { defineComponent } from "vue";
 import {
   SubscriptionStorage,
   ChannelGroup,
@@ -114,6 +114,7 @@ interface Channel extends SubscriptionStorage {
 interface MyData {
   channels: Channel[];
   groups: ChannelGroup[];
+  addGroupName: string;
   groupColorName: string;
   groupColorValue: string;
 }
@@ -124,20 +125,12 @@ export default defineComponent({
     return {
       channels: [],
       groups: [],
+      addGroupName: "",
       groupColorName: "",
       groupColorValue: "",
     } as MyData;
   },
   async mounted() {
-    // intentionally do requests sequentually for early exit errors
-    try {
-      const groups = (await apiGetData("GET", GET_API_GROUP)) as ChannelGroup[];
-      this.groups = groups;
-    } catch (e) {
-      alertAndThrow(e, "failed to get groups");
-      return;
-    }
-
     try {
       // TS: Comes in as SubscriptionStorage but we add the Channel groupsInfo
       const channels = (await apiGetData("GET", GET_API_CHANNEL)) as Channel[];

@@ -1,39 +1,8 @@
 <template>
   <div id="sidebar">
+    <GroupFilterSelector @new-group-filter="groupsFilterUpdate" @new-groups="groupsUpdate"/>
+    <hr />
     <form id="sidebar-floating">
-      <div>
-        <label>
-          Groups
-          <select v-model="groupFilterSelected">
-            <option></option>
-            <option
-              v-for="group in groupFilterAvailable"
-              :style="'background-color: #' + group.color"
-            >
-              {{ group.groupName }}
-            </option>
-          </select>
-        </label>
-        <button type="button" @click="groupFilterApply(true, $event)">
-          Include
-        </button>
-        <button type="button" @click="groupFilterApply(false, $event)">
-          Exclude
-        </button>
-        <ul>
-          <li v-for="group of groupFilterApplied">
-            <button
-              type="button"
-              alt="Remove"
-              @click="groupFilterRemove(group.name)"
-            >
-              x
-            </button>
-            {{ group.included ? "+" : "-" }} {{ group.name }}
-          </li>
-        </ul>
-      </div>
-      <hr />
       <div>
         <label>
           Upload Frequency
@@ -120,6 +89,7 @@
 </template>
 
 <script lang="ts">
+import GroupFilterSelector from "./GroupFilterSelector.vue";
 import { ref, defineComponent, PropType } from "vue";
 
 import {
@@ -149,7 +119,6 @@ import { LocationQueryValue } from "vue-router";
 interface MyData {
   groups: ChannelGroup[];
   videos: GetVideosResult[];
-  groupFilterSelected: string;
   groupFilterApplied: GroupFilter[];
   dateFilterSelected: string | null;
   dateFilterApplied: string | null;
@@ -159,11 +128,13 @@ interface MyData {
 
 export default defineComponent({
   name: "VideosPage",
+  components: {
+    GroupFilterSelector,
+  },
   data() {
     return {
       groups: [],
       videos: [],
-      groupFilterSelected: "",
       groupFilterApplied: [],
       dateFilterSelected: null,
       dateFilterApplied: null,
@@ -171,32 +142,13 @@ export default defineComponent({
       channelUpdateUrl: "http://127.0.0.1:3001" + POST_YOUTUBE_CHANNELS_UPDATE,
     } as MyData;
   },
-  computed: {
-    groupFilterAvailable(): ChannelGroup[] {
-      return this.groups.filter((e) => {
-        for (const applied of this.groupFilterApplied) {
-          if (applied.name == e.groupName) {
-            return false;
-          }
-        }
-        return true;
-      });
-    },
-  },
+
   async mounted() {
     console.log("mounted");
-    // intentionally do requests sequentually for early exit errors
-    try {
-      const groups = (await apiGetData("GET", GET_API_GROUP)) as ChannelGroup[];
-      this.groups = groups;
-    } catch (e) {
-      alertAndThrow(e, "failed to get groups");
-      return;
-    }
 
     this._loadParams();
 
-    await this.refreshVideos();
+    // await this.refreshVideos();
   },
   watch: {
     $route(to, from) {
@@ -227,49 +179,25 @@ export default defineComponent({
         return;
       }
     },
-    async groupFilterApply(included: boolean, event: MouseEvent) {
-      if (this.groupFilterSelected == "") {
-        alert("no element selected");
-        return;
-      }
-      this.groupFilterApplied.push({
-        name: this.groupFilterSelected,
-        included,
-      });
-
-      // remove group name from query
-      const query = { ...this.$router.currentRoute.value.query };
-      changeQueryArray(
-        query,
-        included ? "groupInclude" : "groupExclude",
-        this.groupFilterSelected,
-        true
-      );
-      this.$router.replace({ query });
-
-      await this.refreshVideos();
-
-      this.groupFilterSelected = "";
+    /**
+     * New filter is applied, refresh
+     */
+    async groupsFilterUpdate(groupFilter: GroupFilter[]) {
+      this.groupFilterApplied = groupFilter;
+      this.refreshVideos();
     },
-    groupFilterRemove(name: string) {
-      const groupIndex = findIndexOrFail(
-        this.groupFilterApplied,
-        (e) => e.name == name
-      );
-      const group = this.groupFilterApplied[groupIndex];
-      this.groupFilterApplied.splice(groupIndex, 1);
+    /**
+     * Update our copy of groups if the GroupFilterSelector adds a new group
+     */
+    async groupsUpdate(groups: ChannelGroup[]) {
+      this.groups = groups;
 
-      // remove group name from query
-      const query = { ...this.$router.currentRoute.value.query };
-      changeQueryArray(
-        query,
-        group.included ? "groupInclude" : "groupExclude",
-        group.name,
-        false
-      );
-      this.$router.replace({ query });
-
-      return this.refreshVideos();
+      // If this is the first page load, our groups array is empty. 
+      // Pull from this component then load videos
+      // TODO: this may cause unnessary refreshes if the group filter truely returns empty results
+      if (this.videos.length == 0) {
+        this.refreshVideos();
+      }
     },
     async dateFilterApply() {
       if (this.dateFilterSelected == null) {
@@ -349,32 +277,6 @@ export default defineComponent({
     //
     _loadParams() {
       const query = this.$router.currentRoute.value.query;
-      if ("groupInclude" in query) {
-        for (const groupName of (query["groupInclude"] as string).split(",")) {
-          if (
-            this.groupFilterApplied.find((e) => e.name == groupName) ==
-            undefined
-          ) {
-            this.groupFilterApplied.push({
-              name: groupName,
-              included: true,
-            });
-          }
-        }
-      }
-      if ("groupExclude" in query) {
-        for (const groupName of (query["groupExclude"] as string).split(",")) {
-          if (
-            this.groupFilterApplied.find((e) => e.name == groupName) ==
-            undefined
-          ) {
-            this.groupFilterApplied.push({
-              name: groupName,
-              included: false,
-            });
-          }
-        }
-      }
       if ("dateFilter" in query) {
         this.dateFilterApplied = query["dateFilter"] as string;
       }
