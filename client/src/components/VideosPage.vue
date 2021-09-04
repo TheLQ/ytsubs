@@ -1,8 +1,8 @@
 <template>
   <div id="sidebar">
-    <GroupFilterSelector @new-group-filter="groupsFilterUpdate" @new-groups="groupsUpdate"/>
-    <hr />
     <form id="sidebar-floating">
+      <GroupSelector name="Include Groups" @new-group-selected="groupsIncludeUpdate" @new-groups="groupsUpdate"/>
+      <hr />
       <div>
         <label>
           Upload Frequency
@@ -89,7 +89,7 @@
 </template>
 
 <script lang="ts">
-import GroupFilterSelector from "./GroupFilterSelector.vue";
+import GroupSelector from "./GroupSelector.vue";
 import { ref, defineComponent, PropType } from "vue";
 
 import {
@@ -129,7 +129,7 @@ interface MyData {
 export default defineComponent({
   name: "VideosPage",
   components: {
-    GroupFilterSelector,
+    GroupSelector,
   },
   data() {
     return {
@@ -182,8 +182,8 @@ export default defineComponent({
     /**
      * New filter is applied, refresh
      */
-    async groupsFilterUpdate(groupFilter: GroupFilter[]) {
-      this.groupFilterApplied = groupFilter;
+    async groupsIncludeUpdate(groupFilter: string[]) {
+      this.groupFilterApplied = groupFilter.map(e => { return {name: e, included: true }});
       this.refreshVideos();
     },
     /**

@@ -38,7 +38,8 @@ export function findOrFail<T>(
 ): T {
   const res = arr.find(predicate);
   if (res == undefined) {
-    throw new Error("Not found");
+    console.error("failing array", arr);
+    throw new Error("Not found " + JSON.stringify(arr));
   }
   return res;
 }
@@ -49,6 +50,7 @@ export function findIndexOrFail<T>(
 ): number {
   const res = arr.findIndex(predicate);
   if (res == -1) {
+    console.error("failing array " + JSON.stringify(arr));
     throw new Error("Not found");
   }
   return res;
