@@ -18,6 +18,8 @@ import { InjectionKey } from "vue";
 import { copyArray, findOrFail } from "../../server/src/common/util/langutils";
 
 /*
+ * Typesafe Vuex Store
+ * 
  * Important code inside of the typescript spagetti boilerplate
  * - const mutations
  * - const actions

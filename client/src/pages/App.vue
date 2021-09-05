@@ -17,8 +17,8 @@
 import { defineComponent } from "vue";
 import VideosPage from "./VideosPage.vue";
 import ChannelsPage from "./ChannelsPage.vue";
-import GroupSelector from "./GroupSelector.vue";
-import GroupsDisplay from "./GroupsDisplay.vue";
+import GroupSelector from "../components/GroupSelector.vue";
+import GroupsDisplay from "../components/GroupsDisplay.vue";
 import { ActionTypes, MutationTypes, useStore } from "../VueStore";
 
 export default defineComponent({

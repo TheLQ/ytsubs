@@ -107,7 +107,7 @@ import {
   stringSort,
 } from "../../../server/src/common/util/langutils";
 import { apiGetData, alertAndThrow, apiAction } from "../util/httputils";
-import LoadingBox from "./LoadingBox.vue";
+import LoadingBox from "../components/LoadingBox.vue";
 
 interface Channel extends SubscriptionStorage {
   groupsInfo: ChannelGroup[];

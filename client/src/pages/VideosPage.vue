@@ -119,14 +119,14 @@ import {
   alertAndThrow,
   changeQueryArray,
 } from "../util/httputils";
-import GroupsDisplay, { MappingEvent } from "./GroupsDisplay.vue";
-import GroupSelector from "./GroupSelector.vue";
+import GroupsDisplay, { MappingEvent } from "../components/GroupsDisplay.vue";
+import GroupSelector from "../components/GroupSelector.vue";
 import {
   copyArray as copyArrayTo,
   findOrFail,
   removeOrFail,
 } from "../../../server/src/common/util/langutils";
-import LoadingBox, { isLoadingDone } from "./LoadingBox.vue";
+import LoadingBox, { isLoadingDone } from "../components/LoadingBox.vue";
 import { MutationTypes } from "../VueStore";
 
 interface MyData {

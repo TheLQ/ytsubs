@@ -1,7 +1,7 @@
 import { createApp } from "vue";
-import App from "./components/App.vue";
-import VideosPage from "./components/VideosPage.vue";
-import ChannelsPage from "./components/ChannelsPage.vue";
+import App from "./pages/App.vue";
+import VideosPage from "./pages/VideosPage.vue";
+import ChannelsPage from "./pages/ChannelsPage.vue";
 import { createRouter, createWebHashHistory } from "vue-router";
 import { store, storeKey } from "./VueStore";
 
