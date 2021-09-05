@@ -38,8 +38,8 @@ export function findOrFail<T>(
 ): T {
   const res = arr.find(predicate);
   if (res == undefined) {
-    console.error("failing array", arr);
-    throw new Error("Not found " + JSON.stringify(arr));
+    console.error("failing array" + JSON.stringify(arr));
+    throw new Error("Not found");
   }
   return res;
 }
@@ -76,4 +76,11 @@ export function stringSort(a: string, b: string) {
     return 1;
   }
   return 0;
+}
+
+export function copyArray<T>(source: T[], target: T[]): T[] {
+  for (const entry of source) {
+    target.push(entry);
+  }
+  return target;
 }

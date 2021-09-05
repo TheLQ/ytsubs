@@ -3,10 +3,11 @@
     <form id="sidebar-floating">
       <GroupSelector
         name="Include Groups"
-        v-bind:initial-all-selected="false"
-        v-bind:add-none-group="true"
+        :groups="groups"
+        :groups-applied="groupIncludeApplied"
+        :add-none-all-groups="true"
         query-parameter="groupsInclude"
-        @new-group-selected="groupsIncludeUpdate"
+        @new-groups-selected="groupsIncludeUpdate"
         @new-groups="groupsUpdate"
       />
 
@@ -47,6 +48,14 @@
         <button type="button" alt="Previous">&lt;</button>
         <button type="button" alt="Next" @click="pageNext()">&gt;</button>
       </fieldset>
+
+      <fieldset>
+        <legend>Options</legend>
+        <label>
+          <input type="checkbox" v-model="groupAddOpenDisplayed" />
+          Display Add Group
+        </label>
+      </fieldset>
     </form>
     <form v-bind:action="channelUpdateUrl" method="POST">
       <div>
@@ -72,16 +81,19 @@
           <a class="video-channel" :href="'/?channelId=' + video.channelId">{{
             video.channelName
           }}</a>
+
+          <GroupsDisplay
+            :channel-id="video.channelId"
+            :groups="groups"
+            :groups-applied="video.groups?.split(',') || []"
+            :add-displayed="true"
+            @new-channel-group-mapping="onNewChannelMapping"
+          />
         </div>
         <div class="video-published">
           <span v-bind:title="video.published">{{
             video.publishedRelative
           }}</span>
-        </div>
-        <div v-for="group of video.groups?.split(',')">
-          <div class="channel-tag" :style="getGroupColorStyle(group)">
-            {{ group }}
-          </div>
         </div>
       </div>
     </div>
@@ -89,24 +101,18 @@
 </template>
 
 <script lang="ts">
-import GroupSelector from "./GroupSelector.vue";
 import { ref, defineComponent, PropType } from "vue";
 
 import {
   POST_API_VIDEOS,
   VideosRequest,
 } from "../../../server/src/common/routes/ApiVideosRoute";
-import { GET_API_GROUP } from "../../../server/src/common/routes/ApiGroupRoute";
 import { POST_YOUTUBE_CHANNELS_UPDATE } from "../../../server/src/common/routes/ApiYoutubeRoute";
-import {
-  findIndexOrFail,
-  findOrFail,
-  removeOrFail,
-} from "../../../server/src/common/util/langutils";
 import {
   GroupFilter,
   GetVideosResult,
   ChannelGroup,
+  VideoStorage,
 } from "../../../server/src/common/util/storage";
 import {
   apiGetData,
@@ -114,32 +120,40 @@ import {
   alertAndThrow,
   changeQueryArray,
 } from "../util/httputils";
-import { LocationQueryValue } from "vue-router";
+import GroupsDisplay, { NewMappingEvent } from "./GroupsDisplay.vue";
+import GroupSelector from "./GroupSelector.vue";
+import { copyArray as copyArrayTo } from "../../../server/src/common/util/langutils";
 
 interface MyData {
   groups: ChannelGroup[];
   videos: GetVideosResult[];
-  groupFilterApplied: GroupFilter[];
+  groupIncludeApplied: string[];
   dateFilterSelected: string | null;
   dateFilterApplied: string | null;
   sizeSelected: number;
   channelUpdateUrl: string;
+  groupAddOpenDisplayed: boolean;
+  groupAddFormDisplayedId: string | null;
 }
 
 export default defineComponent({
   name: "VideosPage",
   components: {
+    GroupsDisplay,
     GroupSelector,
   },
   data() {
     return {
       groups: [],
       videos: [],
-      groupFilterApplied: [],
+      groupIncludeApplied: [],
       dateFilterSelected: null,
       dateFilterApplied: null,
       sizeSelected: 25,
       channelUpdateUrl: "http://127.0.0.1:3001" + POST_YOUTUBE_CHANNELS_UPDATE,
+      groupAddOpenDisplayed: true,
+      groupAddFormDisplayedId: null,
+      groupAddFormGroups: [],
     } as MyData;
   },
 
@@ -148,7 +162,7 @@ export default defineComponent({
 
     this._loadParams();
 
-    // await this.refreshVideos();
+    await this.refreshVideos();
   },
   watch: {
     $route(to, from) {
@@ -160,8 +174,16 @@ export default defineComponent({
   methods: {
     async refreshVideos(): Promise<void> {
       try {
+        const groupFilter: GroupFilter[] = [];
+        for (const entry of this.groupIncludeApplied) {
+          groupFilter.push({
+            name: entry,
+            included: true,
+          });
+        }
+
         const reqJson: VideosRequest = {
-          groups: this.groupFilterApplied,
+          groups: groupFilter,
           publishedAfter:
             this.dateFilterApplied == null ? undefined : this.dateFilterApplied,
           limit: this.sizeSelected,
@@ -183,23 +205,23 @@ export default defineComponent({
      * New filter is applied, refresh
      */
     async groupsIncludeUpdate(groupFilter: string[]) {
-      this.groupFilterApplied = groupFilter.map((e) => {
-        return { name: e, included: true };
-      });
+      // TODO REPLACED WITH BEWLOW
+      // this.groupFilterApplied = groupFilter.map((e) => {
+      //   return { name: e, included: true };
+      // });
+      this.groupIncludeApplied.length = 0;
+      copyArrayTo(groupFilter, this.groupIncludeApplied);
+
       this.refreshVideos();
     },
     /**
      * Update our copy of groups if the GroupFilterSelector adds a new group
      */
     async groupsUpdate(groups: ChannelGroup[]) {
-      this.groups = groups;
+      this.groups.length = 0;
+      copyArrayTo(groups, this.groups);
 
-      // If this is the first page load, our groups array is empty.
-      // Pull from this component then load videos
-      // TODO: this may cause unnessary refreshes if the group filter truely returns empty results
-      if (this.videos.length == 0) {
-        this.refreshVideos();
-      }
+      // no need to refresh videos, just extra info
     },
     async dateFilterApply() {
       if (this.dateFilterSelected == null) {
@@ -268,12 +290,14 @@ export default defineComponent({
       await this.refreshVideos();
     },
     //
-    getGroupColorStyle(name: string): string {
-      const color = findOrFail(this.groups, (e) => e.groupName == name).color;
-      if (color != null) {
-        return "background-color: #" + color;
-      } else {
-        return "";
+    onNewChannelMapping(event: NewMappingEvent) {
+      console.log("event", JSON.stringify(event));
+      // apply new mapping to all videos on current page
+      // subsequent pages will re-query so have new groups
+      for (const video of this.videos) {
+        if (video.channelId == event.channelId) {
+          video.groups = event.groups.join(",");
+        }
       }
     },
     //

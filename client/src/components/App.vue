@@ -17,12 +17,16 @@
 import { defineComponent } from "vue";
 import VideosPage from "./VideosPage.vue";
 import ChannelsPage from "./ChannelsPage.vue";
+import GroupSelector from "./GroupSelector.vue";
+import GroupsDisplay from "./GroupsDisplay.vue";
 
 export default defineComponent({
   name: "App",
   components: {
     VideosPage,
     ChannelsPage,
+    GroupsDisplay,
+    GroupSelector
   },
 });
 </script>
