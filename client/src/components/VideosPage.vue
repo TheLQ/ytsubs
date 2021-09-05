@@ -3,12 +3,10 @@
     <form id="sidebar-floating">
       <GroupSelector
         name="Include Groups"
-        :groups="groups"
         :groups-applied="groupIncludeApplied"
         :add-none-all-groups="true"
         query-parameter="groupsInclude"
         @new-groups-selected="groupsIncludeUpdate"
-        @new-groups="groupsUpdate"
       />
 
       <fieldset>
@@ -66,7 +64,9 @@
     </form>
   </div>
   <main>
-    <div class="video-container">
+    <LoadingBox />
+    <!-- isLoadingDone($store) -->
+    <div class="video-container" v-if="isLoadingDone($store)">
       <div v-for="video in videos" class="video-box">
         <a
           class="video-link"
@@ -84,7 +84,6 @@
 
           <GroupsDisplay
             :channel-id="video.channelId"
-            :groups="groups"
             :groups-applied="video.groups?.split(',') || []"
             :add-displayed="true"
             @new-channel-group-mapping="onNewChannelMapping"
@@ -123,9 +122,10 @@ import {
 import GroupsDisplay, { NewMappingEvent } from "./GroupsDisplay.vue";
 import GroupSelector from "./GroupSelector.vue";
 import { copyArray as copyArrayTo } from "../../../server/src/common/util/langutils";
+import LoadingBox, { isLoadingDone } from "./LoadingBox.vue";
+import { MutationTypes } from "../VueStore";
 
 interface MyData {
-  groups: ChannelGroup[];
   videos: GetVideosResult[];
   groupIncludeApplied: string[];
   dateFilterSelected: string | null;
@@ -141,10 +141,10 @@ export default defineComponent({
   components: {
     GroupsDisplay,
     GroupSelector,
+    LoadingBox,
   },
   data() {
     return {
-      groups: [],
       videos: [],
       groupIncludeApplied: [],
       dateFilterSelected: null,
@@ -172,6 +172,7 @@ export default defineComponent({
     },
   },
   methods: {
+    isLoadingDone,
     async refreshVideos(): Promise<void> {
       try {
         const groupFilter: GroupFilter[] = [];
@@ -189,12 +190,15 @@ export default defineComponent({
           limit: this.sizeSelected,
         };
         // everything is proxied so stringify
-        console.log("loading videos", JSON.stringify(reqJson));
+        const loadingMessage = "Loading Videos " + JSON.stringify(reqJson);
+        console.log(loadingMessage);
+        this.$store.commit(MutationTypes.LOADING_ADD, loadingMessage);
         const result = (await apiSendData(
           "POST",
           POST_API_VIDEOS,
           reqJson
         )) as GetVideosResult[];
+        this.$store.commit(MutationTypes.LOADING_DONE, loadingMessage);
         this.videos = result;
       } catch (e) {
         alertAndThrow(e, "failed to get groups");
@@ -213,15 +217,6 @@ export default defineComponent({
       copyArrayTo(groupFilter, this.groupIncludeApplied);
 
       this.refreshVideos();
-    },
-    /**
-     * Update our copy of groups if the GroupFilterSelector adds a new group
-     */
-    async groupsUpdate(groups: ChannelGroup[]) {
-      this.groups.length = 0;
-      copyArrayTo(groups, this.groups);
-
-      // no need to refresh videos, just extra info
     },
     async dateFilterApply() {
       if (this.dateFilterSelected == null) {

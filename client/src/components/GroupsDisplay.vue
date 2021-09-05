@@ -16,7 +16,6 @@
       <div v-if="formDisplayed">
         <GroupSelector
           name="Set Channel Groups"
-          :groups="groups"
           :groups-applied="groupsAppliedWorking"
           :add-none-all-groups="false"
           @new-groups-applied="onFormGroupUpdate($event)"
@@ -44,6 +43,7 @@ import {
   copyArray,
   findOrFail,
 } from "../../../server/src/common/util/langutils";
+import { ActionTypes, MutationTypes } from "../VueStore";
 
 interface MyData {
   formDisplayed: boolean;
@@ -65,10 +65,6 @@ export default defineComponent({
       type: String,
       required: true,
     },
-    groups: {
-      type: Object as PropType<ChannelGroup[]>,
-      required: true,
-    },
     groupsApplied: {
       type: Object as PropType<string[]>,
       required: true,
@@ -86,11 +82,11 @@ export default defineComponent({
   },
   computed: {
     groupsFiltered() {
-      console.log("groupsApplied" + JSON.stringify(this.groupsApplied));
+      // console.log("groupsApplied" + JSON.stringify(this.groupsApplied));
       return this.groupsApplied.map((name) => {
-        console.log("finding group " + name);
-        const res = findOrFail(this.groups, (group) => group.groupName == name);
-        console.log("done finding group " + name);
+        // console.log("finding group " + name + " in " + JSON.stringify(this.groupsApplied));
+        const res = findOrFail(this.$store.state.groups, (group) => group.groupName == name);
+        // console.log("done finding group " + name + " in " + JSON.stringify(this.groupsApplied));
         return res;
       });
     },

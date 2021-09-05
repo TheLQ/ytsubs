@@ -1,6 +1,7 @@
 import express from "express";
 import { Context } from "..";
 import { ARG_GROUP_NAME, ARG_COLOR } from "../../common/routes/ApiGroupRoute";
+import { sleep } from "../../common/util/langutils";
 import { parseForm } from "../util/apputil";
 
 export async function getApiGroup(
@@ -10,6 +11,7 @@ export async function getApiGroup(
 ): Promise<void> {
   const result = await context.db.getChannelGroups();
 
+  // await sleep(5000);
   res.type("json");
   res.end(JSON.stringify(result));
 }

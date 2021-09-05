@@ -79,10 +79,6 @@ export default defineComponent({
       type: String,
       required: true,
     },
-    groups: {
-      type: Object as PropType<ChannelGroup[]>,
-      required: true,
-    },
     groupsApplied: {
       type: Object as PropType<string[]>,
       required: true,
@@ -103,24 +99,23 @@ export default defineComponent({
     } as MyData;
   },
   // -- events
-  async mounted() {
+  mounted() {
     this._paramsLoad();
   },
   computed: {
     groupsAll(): ChannelGroup[] {
       if (this.addNoneAllGroups) {
-        const result = Array.from(this.groups);
+        const result = Array.from(this.$store.state.groups);
         result.push(NONE_GROUP);
         result.push(ALL_GROUP);
         return result;
       } else {
-        return this.groups;
+        return this.$store.state.groups;
       }
     },
   },
   emits: {
     newGroupsApplied: (payload: string[]) => payload,
-    newGroups: (payload: ChannelGroup[]) => payload,
   },
   // -- methods
   methods: {
@@ -204,7 +199,7 @@ export default defineComponent({
     /**
      * FORM CHECKBOX: Update on checkbox value change
      */
-    async groupSelected(groupName: string) {
+    groupSelected(groupName: string) {
       const groupsToApply = Array.from(this.groupsApplied);
       if (this.isSelected(groupName)) {
         // already selected, delete it
@@ -223,21 +218,21 @@ export default defineComponent({
     /**
      * FORM BUTTON: Select All/None
      */
-    async groupAllSelected(selected: boolean) {
+    groupAllSelected(selected: boolean) {
       this._groupAllSelected(selected);
       this._paramsUpdate();
     },
-    async _groupAllSelected(selected: boolean) {
+    _groupAllSelected(selected: boolean) {
       if (selected) {
         this.$emit(
           "newGroupsApplied",
-          this.groups.map((e) => e.groupName)
+          this.$store.state.groups.map((e) => e.groupName)
         );
       } else {
         this.$emit("newGroupsApplied", []);
       }
     },
-    async _checkAllNone() {
+    _checkAllNone() {
       if (!this.addNoneAllGroups) {
         return;
       }

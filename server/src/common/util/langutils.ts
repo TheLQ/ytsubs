@@ -84,3 +84,9 @@ export function copyArray<T>(source: T[], target: T[]): T[] {
   }
   return target;
 }
+
+export function sleep(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}   

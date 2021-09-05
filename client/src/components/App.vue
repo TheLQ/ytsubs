@@ -19,6 +19,7 @@ import VideosPage from "./VideosPage.vue";
 import ChannelsPage from "./ChannelsPage.vue";
 import GroupSelector from "./GroupSelector.vue";
 import GroupsDisplay from "./GroupsDisplay.vue";
+import { ActionTypes, MutationTypes, useStore } from "../VueStore";
 
 export default defineComponent({
   name: "App",
@@ -26,7 +27,11 @@ export default defineComponent({
     VideosPage,
     ChannelsPage,
     GroupsDisplay,
-    GroupSelector
+    GroupSelector,
+  },
+  beforeCreate() {
+    const store = useStore();
+    store.dispatch(ActionTypes.GROUPS_LOAD, "Loading groups");
   },
 });
 </script>

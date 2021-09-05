@@ -56,6 +56,7 @@
     </form>
   </div>
   <main>
+    <LoadingBox />
     <ul>
       <li v-for="channel of channels">
         <a :href="'https://www.youtube.com/channel/' + channel.channelId">{{
@@ -106,6 +107,7 @@ import {
   stringSort,
 } from "../../../server/src/common/util/langutils";
 import { apiGetData, alertAndThrow, apiAction } from "../util/httputils";
+import LoadingBox from "./LoadingBox.vue";
 
 interface Channel extends SubscriptionStorage {
   groupsInfo: ChannelGroup[];
@@ -121,6 +123,9 @@ interface MyData {
 
 export default defineComponent({
   name: "ChannelsPage",
+  components: {
+    LoadingBox
+  },
   data() {
     return {
       channels: [],
