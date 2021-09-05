@@ -1,6 +1,7 @@
 import express from "express";
 import fs from "fs";
 import {
+  deleteApiGroup,
   getApiGroup,
   putApiGroup,
   putApiGroupColor,
@@ -55,6 +56,7 @@ async function init() {
 
     app.get(GET_API_GROUP, prehandle(getApiGroup, context));
     app.put(API_GROUP, prehandle(putApiGroup, context));
+    app.delete(API_GROUP, prehandle(deleteApiGroup, context));
     app.put(API_GROUP_COLOR, prehandle(putApiGroupColor, context));
 
     app.post(POST_YOUTUBE_CHANNELS, prehandle(postYoutubeChannels, context));

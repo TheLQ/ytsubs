@@ -349,15 +349,28 @@ export class Storage {
     }
   }
 
-  public async addChannelGroups(channelGroups: ChannelGroup[]): Promise<void> {
-    return await this.upsert(
-      channelGroups,
-      (row, result) => {
-        result.push(row.groupName);
-      },
-      // PRIMARY KEY will throw errors on duplicates, which is what we want for now
-      (sqlPlaceholders) => `INSERT INTO channelgroup (groupName) VALUES (?)`
+  public async addChannelGroup(groupName: string): Promise<void> {
+    const res = await this.db.run(
+      "INSERT INTO channelgroup (groupName) VALUES (?)",
+      [groupName]
     );
+    if (res.changes != 1) {
+      throw new Error(
+        `Failed to insert group ${groupName} rows affected ${res.changes}`
+      );
+    }
+  }
+
+  public async removeChannelGroup(groupName: string): Promise<void> {
+    const res = await this.db.run(
+      "DELETE FROM channelgroup WHERE groupName = ?",
+      [groupName]
+    );
+    if (res.changes != 1) {
+      throw new Error(
+        `Failed to delete group ${groupName} rows affected ${res.changes}`
+      );
+    }
   }
 
   public async addChannelGroupMapping(

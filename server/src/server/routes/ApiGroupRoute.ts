@@ -20,7 +20,18 @@ export async function putApiGroup(
 ): Promise<void> {
   const groupName = req.params[ARG_GROUP_NAME];
 
-  await context.db.addChannelGroups([{ groupName, color: null }]);
+  await context.db.addChannelGroup(groupName);
+  res.end("1");
+}
+
+export async function deleteApiGroup(
+  req: express.Request,
+  res: express.Response,
+  context: Context
+): Promise<void> {
+  const groupName = req.params[ARG_GROUP_NAME];
+
+  await context.db.removeChannelGroup(groupName);
   res.end("1");
 }
 
