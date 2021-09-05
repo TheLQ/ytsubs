@@ -183,4 +183,9 @@ export default defineComponent({
 .channel-tag-wrapper form {
   display: inline;
 }
+
+.channel-tag {
+  display: inline;
+  border: 1px solid black;
+}
 </style>

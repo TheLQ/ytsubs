@@ -1,69 +1,69 @@
 <template>
-  <div id="sidebar">
-    <form id="sidebar-floating">
-        <GroupSelector
-          name="Include Groups"
-          :groups-applied="groupIncludeApplied"
-          :add-none-all-groups="true"
-          query-parameter="groupsInclude"
-          @new-groups-applied="groupsIncludeUpdate"
-        />
+  <div class="sidebar">
+    <form>
+      <GroupSelector
+        name="Include Groups"
+        :groups-applied="groupIncludeApplied"
+        :add-none-all-groups="true"
+        query-parameter="groupsInclude"
+        @new-groups-applied="groupsIncludeUpdate"
+      />
 
-        <fieldset>
-          <legend>Upload Frequency</legend>
-          <select>
-            <option></option>
-            <option>&lt;5 past month</option>
-            <option>&lt;5 6 months</option>
-            <option>&lt;10 6 months</option>
-          </select>
-          <button type="button">Apply</button>
-        </fieldset>
+      <fieldset>
+        <legend>Upload Frequency</legend>
+        <select>
+          <option></option>
+          <option>&lt;5 past month</option>
+          <option>&lt;5 6 months</option>
+          <option>&lt;10 6 months</option>
+        </select>
+        <button type="button">Apply</button>
+      </fieldset>
 
-        <fieldset>
-          <legend>Upload Date Before</legend>
-          <input type="date" v-model="dateFilterSelected" />
-          <button type="button" @click="dateFilterApply">Apply</button>
-          <div v-if="dateFilterApplied != null">
-            <ul>
-              <li>
-                <button type="button" alt="Remove" @click="dateFilterRemove()">
-                  x
-                </button>
-                {{ dateFilterApplied }}
-              </li>
-            </ul>
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend>Limit</legend>
-          <input type="number" v-model="sizeSelected" @change="sizeApply()" />
-        </fieldset>
-
-        <fieldset>
-          <legend>Page control</legend>
-          <button type="button" @click="pageFirst()">First</button>
-          <button type="button" alt="Previous">&lt;</button>
-          <button type="button" alt="Next" @click="pageNext()">&gt;</button>
-        </fieldset>
-
-        <fieldset>
-          <legend>Options</legend>
-          <label>
-            <input type="checkbox" v-model="groupAddOpenDisplayed" />
-            Display Add Group
-          </label>
-        </fieldset>
-      </form>
-      <form v-bind:action="channelUpdateUrl" method="POST">
-        <div>
-          <button type="submit" name="downloadFeeds">
-            Download channel feeds
-          </button>
+      <fieldset>
+        <legend>Upload Date Before</legend>
+        <input type="date" v-model="dateFilterSelected" />
+        <button type="button" @click="dateFilterApply">Apply</button>
+        <div v-if="dateFilterApplied != null">
+          <ul>
+            <li>
+              <button type="button" alt="Remove" @click="dateFilterRemove()">
+                x
+              </button>
+              {{ dateFilterApplied }}
+            </li>
+          </ul>
         </div>
-      </form>
-    </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Limit</legend>
+        <input type="number" v-model="sizeSelected" @change="sizeApply()" />
+      </fieldset>
+
+      <fieldset>
+        <legend>Page control</legend>
+        <button type="button" @click="pageFirst()">First</button>
+        <button type="button" alt="Previous">&lt;</button>
+        <button type="button" alt="Next" @click="pageNext()">&gt;</button>
+      </fieldset>
+
+      <fieldset>
+        <legend>Options</legend>
+        <label>
+          <input type="checkbox" v-model="groupAddOpenDisplayed" />
+          Display Add Group
+        </label>
+      </fieldset>
+    </form>
+    <form v-bind:action="channelUpdateUrl" method="POST">
+      <div>
+        <button type="submit" name="downloadFeeds">
+          Download channel feeds
+        </button>
+      </div>
+    </form>
+  </div>
   <main>
     <LoadingBox />
     <!-- isLoadingDone($store) -->

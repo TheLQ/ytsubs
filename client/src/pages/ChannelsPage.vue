@@ -1,47 +1,34 @@
 <template>
-  <div id="sidebar">
+  <div class="sidebar">
     <form>
-      <div>
+      <fieldset>
+        <legend>Sync Subscriptions</legend>
         <label>
-          Upload subscription list from
           <a
             href="https://www.youtube.com/subscription_manager?action_takeout=1"
             >Youtube Subscription Manager</a
           >
           <input type="file" name="xml" />
           <button type="button" name="uploadSubscriptions">
-            Upload Subscriptions
+            Upload Subscriptions File
           </button>
         </label>
-      </div>
-      <hr />
-      <div>
-        <label>
-          Check Youtube Auth
-          <button type="button" name="checkYoutubeAuth">
-            Check Youtube Auth
-          </button>
-        </label>
-      </div>
-      <hr />
-      <div>
-        <label>
-          Sync Subscriptions
-          <button type="button" name="syncSubscriptions">
-            Upload Subscriptions
-          </button>
-        </label>
-      </div>
-      <hr />
-      <div>
-        <label>
-          Add group
-          <input type="text" v-model="addGroupName" />
-          <button type="button">Add Group</button>
-        </label>
-      </div>
-      <hr />
-      <div>
+
+        <hr/>
+        
+        <button type="button" name="syncSubscriptions">
+          Sync from Youtube
+        </button>
+      </fieldset>
+      
+      <fieldset>
+        <legend>Add group</legend>
+        <input type="text" v-model="addGroupName" />
+        <button type="button">Add Group</button>
+      </fieldset>
+      
+      <fieldset>
+        <legend>Group Edit</legend>
         <select v-model="groupColorName">
           <option></option>
           <option v-for="group of groups">
@@ -52,7 +39,15 @@
         <button type="button" @click.prevent="setGroupColor()">
           Set Group Color
         </button>
-      </div>
+      </fieldset>
+
+      
+      <fieldset>
+        <legend>debug</legend>
+          <button type="button" name="checkYoutubeAuth">
+            Check Youtube Auth
+          </button>
+      </fieldset>
     </form>
   </div>
   <main>
@@ -211,11 +206,4 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.group-channel-add-form {
-  display: inline;
-}
-
-.group-channel-remove-form {
-  display: inline;
-}
 </style>

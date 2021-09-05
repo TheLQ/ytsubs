@@ -1,6 +1,6 @@
 <template>
   <header>
-    <h1 id="appname">ytsubs</h1>
+    <h1>ytsubs</h1>
 
     <nav>
       <router-link to="/">Videos</router-link>
@@ -41,13 +41,9 @@ header {
   background-color: gray;
 }
 
-header #appname {
+header h1 {
   display: inline;
   margin: 20px;
-}
-
-nav {
-  display: inline;
 }
 
 header .router-link-active {
@@ -55,10 +51,8 @@ header .router-link-active {
   background-color: lightgray;
 }
 
-#app {
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: column;
+header nav {
+  display: inline;
 }
 
 #content {

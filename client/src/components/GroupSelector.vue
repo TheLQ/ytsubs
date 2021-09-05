@@ -12,7 +12,7 @@
   <fieldset>
     <legend>{{ name }}</legend>
     <div>
-      <ul class="groupsList">
+      <ul class="groups-list">
         <li v-for="group of groupsAll">
           <label v-bind:style="getGroupColorStyle(group)">
             {{ group.groupName }}
@@ -274,7 +274,7 @@ export function updateGroupSelected(
 </script>
 
 <style>
-.groupsList {
+.groups-list {
   margin-top: 0;
   margin-bottom: 0;
 }
