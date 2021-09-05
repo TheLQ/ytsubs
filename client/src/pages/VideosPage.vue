@@ -1,68 +1,69 @@
 <template>
   <div id="sidebar">
     <form id="sidebar-floating">
-      <GroupSelector
-        name="Include Groups"
-        :groups-applied="groupIncludeApplied"
-        :add-none-all-groups="true"
-        query-parameter="groupsInclude"
-        @new-groups-applied="groupsIncludeUpdate"
-      />
+        <GroupSelector
+          name="Include Groups"
+          :groups-applied="groupIncludeApplied"
+          :add-none-all-groups="true"
+          query-parameter="groupsInclude"
+          @new-groups-applied="groupsIncludeUpdate"
+        />
 
-      <fieldset>
-        <legend>Upload Frequency</legend>
-        <select>
-          <option></option>
-          <option>&lt;5 past month</option>
-          <option>&lt;5 6 months</option>
-          <option>&lt;10 6 months</option>
-        </select>
-        <button type="button">Apply</button>
-      </fieldset>
+        <fieldset>
+          <legend>Upload Frequency</legend>
+          <select>
+            <option></option>
+            <option>&lt;5 past month</option>
+            <option>&lt;5 6 months</option>
+            <option>&lt;10 6 months</option>
+          </select>
+          <button type="button">Apply</button>
+        </fieldset>
 
-      <fieldset>
-        <legend>Upload Date Before</legend>
-        <input type="date" v-model="dateFilterSelected" />
-        <button type="button" @click="dateFilterApply">Apply</button>
-        <div v-if="dateFilterApplied != null">
-          <ul>
-            <li>
-              <button type="button" alt="Remove" @click="dateFilterRemove()">
-                x</button
-              >{{ dateFilterApplied }}
-            </li>
-          </ul>
+        <fieldset>
+          <legend>Upload Date Before</legend>
+          <input type="date" v-model="dateFilterSelected" />
+          <button type="button" @click="dateFilterApply">Apply</button>
+          <div v-if="dateFilterApplied != null">
+            <ul>
+              <li>
+                <button type="button" alt="Remove" @click="dateFilterRemove()">
+                  x
+                </button>
+                {{ dateFilterApplied }}
+              </li>
+            </ul>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Limit</legend>
+          <input type="number" v-model="sizeSelected" @change="sizeApply()" />
+        </fieldset>
+
+        <fieldset>
+          <legend>Page control</legend>
+          <button type="button" @click="pageFirst()">First</button>
+          <button type="button" alt="Previous">&lt;</button>
+          <button type="button" alt="Next" @click="pageNext()">&gt;</button>
+        </fieldset>
+
+        <fieldset>
+          <legend>Options</legend>
+          <label>
+            <input type="checkbox" v-model="groupAddOpenDisplayed" />
+            Display Add Group
+          </label>
+        </fieldset>
+      </form>
+      <form v-bind:action="channelUpdateUrl" method="POST">
+        <div>
+          <button type="submit" name="downloadFeeds">
+            Download channel feeds
+          </button>
         </div>
-      </fieldset>
-
-      <fieldset>
-        <legend>Limit</legend>
-        <input type="number" v-model="sizeSelected" @change="sizeApply()" />
-      </fieldset>
-
-      <fieldset>
-        <legend>Page control</legend>
-        <button type="button" @click="pageFirst()">First</button>
-        <button type="button" alt="Previous">&lt;</button>
-        <button type="button" alt="Next" @click="pageNext()">&gt;</button>
-      </fieldset>
-
-      <fieldset>
-        <legend>Options</legend>
-        <label>
-          <input type="checkbox" v-model="groupAddOpenDisplayed" />
-          Display Add Group
-        </label>
-      </fieldset>
-    </form>
-    <form v-bind:action="channelUpdateUrl" method="POST">
-      <div>
-        <button type="submit" name="downloadFeeds">
-          Download channel feeds
-        </button>
-      </div>
-    </form>
-  </div>
+      </form>
+    </div>
   <main>
     <LoadingBox />
     <!-- isLoadingDone($store) -->
@@ -78,9 +79,9 @@
           <h3 class="video-title">{{ video.title }}</h3>
         </a>
         <div class="video-channel-wrapper">
-          <a class="video-channel" :href="'/?channelId=' + video.channelId">{{
-            video.channelName
-          }}</a>
+          <a class="video-channel" :href="'/?channelId=' + video.channelId">
+            {{ video.channelName }}
+          </a>
 
           <GroupsDisplay
             :channel-id="video.channelId"
@@ -90,9 +91,9 @@
           />
         </div>
         <div class="video-published">
-          <span v-bind:title="video.published">{{
-            video.publishedRelative
-          }}</span>
+          <span v-bind:title="video.published">
+            {{ video.publishedRelative }}
+          </span>
         </div>
       </div>
     </div>
@@ -120,7 +121,9 @@ import {
   changeQueryArray,
 } from "../util/httputils";
 import GroupsDisplay, { MappingEvent } from "../components/GroupsDisplay.vue";
-import GroupSelector from "../components/GroupSelector.vue";
+import GroupSelector, {
+  updateGroupSelected,
+} from "../components/GroupSelector.vue";
 import {
   copyArray as copyArrayTo,
   findOrFail,
@@ -287,23 +290,18 @@ export default defineComponent({
 
       await this.refreshVideos();
     },
-    //
+    /**
+     * Update selected video's groups and distribute to the channel's other videos
+     * UI update only, API already updated
+     */
     onNewChannelMapping(event: MappingEvent) {
       console.log("newChannelMapping event", JSON.stringify(event));
 
-      let groups =
-        findOrFail(
-          this.videos,
-          (e) => e.channelId == event.channelId
-        ).groups?.split(",") || [];
-      if (event.adding) {
-        groups.push(event.group);
-      } else {
-        removeOrFail(groups, (e) => e == event.group);
-      }
-
-      // if empty, reset array to undefined (from sql) instead of [""]
-      const groupsValue = groups.length == 0 ? undefined : groups.join(",");
+      let firstVideo = findOrFail(
+        this.videos,
+        (e) => e.channelId == event.channelId
+      );
+      const groupsValue = updateGroupSelected(event, firstVideo.groups);
 
       // apply new mapping to all videos on current page
       // subsequent pages will re-query so have new groups

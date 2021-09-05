@@ -26,11 +26,23 @@
         <li v-if="addNoneAllGroups">
           <label>
             All
-            <input type="radio" name="magicAppliedForm" value="All" v-model="magicAllNone" @click="groupAllSelected(true)" />
+            <input
+              type="radio"
+              name="magicAppliedForm"
+              value="All"
+              v-model="magicAllNone"
+              @click="groupAllSelected(true)"
+            />
           </label>
           <label>
             None
-            <input type="radio" name="magicAppliedForm" value="None" v-model="magicAllNone" @click="groupAllSelected(false)" />
+            <input
+              type="radio"
+              name="magicAppliedForm"
+              value="None"
+              v-model="magicAllNone"
+              @click="groupAllSelected(false)"
+            />
           </label>
         </li>
       </ul>
@@ -41,13 +53,17 @@
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
 import { GET_API_GROUP } from "../../../server/src/common/routes/ApiGroupRoute";
-import { findIndexOrFail } from "../../../server/src/common/util/langutils";
+import {
+  findIndexOrFail,
+  removeOrFail,
+} from "../../../server/src/common/util/langutils";
 import {
   ChannelGroup,
   GroupFilter,
   GROUP_MAGIC_NONE,
 } from "../../../server/src/common/util/storage";
 import { getGroupColorStyle } from "../utils";
+import { MappingEvent } from "./GroupsDisplay.vue";
 
 const NONE_GROUP: ChannelGroup = {
   groupName: GROUP_MAGIC_NONE,
@@ -239,6 +255,22 @@ export default defineComponent({
     },
   },
 });
+
+export function updateGroupSelected(
+  event: MappingEvent,
+  existingGroups?: string
+) {
+  const groups = existingGroups?.split(",") || [];
+  if (event.adding) {
+    groups.push(event.group);
+  } else {
+    removeOrFail(groups, (e) => e == event.group);
+  }
+
+  // if empty, reset array to undefined (from sql) instead of [""] (from join of an empty array)
+  const groupsValue = groups.length == 0 ? undefined : groups.join(",");
+  return groupsValue;
+}
 </script>
 
 <style>

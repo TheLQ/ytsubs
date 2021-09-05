@@ -63,25 +63,12 @@
           channel.channelName
         }}</a>
         -
-        <div
-          v-for="group of channel.groupsInfo"
-          class="channel-tag"
-          :style="'background-color: #' + group.color"
-        >
-          {{ group.groupName }}
-          <button
-            type="button"
-            @click="removeChannelGroup(channel.channelId, group.groupName)"
-          >
-            x
-          </button>
-        </div>
-        <select @change="addChannelGroup(channel.channelId, $event)">
-          <option value></option>
-          <option v-for="group of groups">
-            {{ group.groupName }}
-          </option>
-        </select>
+        <GroupsDisplay
+          :channel-id="channel.channelId"
+          :groups-applied="channel.groups?.split(',') || []"
+          :add-displayed="true"
+          @mapping-event="onNewChannelMapping"
+        />
       </li>
     </ul>
   </main>
@@ -108,6 +95,11 @@ import {
 } from "../../../server/src/common/util/langutils";
 import { apiGetData, alertAndThrow, apiAction } from "../util/httputils";
 import LoadingBox from "../components/LoadingBox.vue";
+import GroupsDisplay, { MappingEvent } from "../components/GroupsDisplay.vue";
+import { MutationTypes } from "../VueStore";
+import GroupSelector, {
+  updateGroupSelected,
+} from "../components/GroupSelector.vue";
 
 interface Channel extends SubscriptionStorage {
   groupsInfo: ChannelGroup[];
@@ -124,6 +116,7 @@ interface MyData {
 export default defineComponent({
   name: "ChannelsPage",
   components: {
+    GroupsDisplay,
     LoadingBox,
   },
   data() {
@@ -136,28 +129,56 @@ export default defineComponent({
     } as MyData;
   },
   async mounted() {
-    try {
-      // TS: Comes in as SubscriptionStorage but we add the Channel groupsInfo
-      const channels = (await apiGetData("GET", GET_API_CHANNEL)) as Channel[];
-      this.channels = channels.map((entry) => {
-        if (entry.groups) {
-          entry.groupsInfo = entry.groups
-            .split(",")
-            .map((groupNeedle) =>
-              findOrFail(this.groups, (e) => e.groupName == groupNeedle)
-            );
-          entry.groupsInfo.sort((a, b) => stringSort(a.groupName, b.groupName));
-        } else {
-          entry.groupsInfo = [];
-        }
-        return entry;
-      });
-    } catch (e) {
-      alertAndThrow(e, "failed to get channels");
-      return;
-    }
+    this._refreshSubscriptions();
+    // try {
+
+    //   // TS: Comes in as SubscriptionStorage but we add the Channel groupsInfo
+    //   const channels = (await apiGetData("GET", GET_API_CHANNEL)) as Channel[];
+    //   this.channels = channels.map((entry) => {
+    //     if (entry.groups) {
+    //       entry.groupsInfo = entry.groups
+    //         .split(",")
+    //         .map((groupNeedle) =>
+    //           findOrFail(this.groups, (e) => e.groupName == groupNeedle)
+    //         );
+    //       entry.groupsInfo.sort((a, b) => stringSort(a.groupName, b.groupName));
+    //     } else {
+    //       entry.groupsInfo = [];
+    //     }
+    //     return entry;
+    //   });
+    // } catch (e) {
+    //   alertAndThrow(e, "failed to get channels");
+    //   return;
+    // }
   },
   methods: {
+    async _refreshSubscriptions() {
+      const loadingMessage = "Loading channels...";
+      this.$store.commit(MutationTypes.LOADING_ADD, loadingMessage);
+      try {
+        const channels = (await apiGetData(
+          "GET",
+          GET_API_CHANNEL
+        )) as Channel[];
+        this.channels = channels;
+      } catch (e) {
+        throw alertAndThrow(e, "failed to get channels");
+      }
+
+      this.$store.commit(MutationTypes.LOADING_DONE, loadingMessage);
+    },
+    /**
+     * Update selected channel's groups
+     * UI update only, API already updated
+     */
+    onNewChannelMapping(event: MappingEvent) {
+      const channel = findOrFail(
+        this.channels,
+        (e) => e.channelId == event.channelId
+      );
+      channel.groups = updateGroupSelected(event, channel.groups);
+    },
     async setGroupColor(): Promise<void> {
       console.log(this.groupColorName + " val " + this.groupColorValue);
       if (this.groupColorName == "") {
@@ -184,51 +205,6 @@ export default defineComponent({
       }
 
       this.groupColorName = "";
-    },
-    async removeChannelGroup(
-      channelId: string,
-      groupName: string
-    ): Promise<void> {
-      const channel = findOrFail(
-        this.$data.channels,
-        (e) => e.channelId == channelId
-      );
-      if (channel.groups == undefined) {
-        throw new Error("state error");
-      }
-      const groupIndex = findIndexOrFail(
-        channel.groupsInfo,
-        (e) => e.groupName == groupName
-      );
-      channel.groupsInfo.splice(groupIndex, 1);
-
-      try {
-        await apiAction("DELETE", apiChannelGroup(channelId, groupName));
-      } catch (e) {
-        alertAndThrow(e, "failed to delete channel group");
-        return;
-      }
-    },
-    async addChannelGroup(channelId: string, event: Event): Promise<void> {
-      if (!event.target) {
-        throw new Error("state error");
-      }
-      const groupName = (event.target as HTMLSelectElement).value;
-
-      const channel = findOrFail(
-        this.$data.channels,
-        (e) => e.channelId == channelId
-      );
-      channel.groupsInfo.push(
-        findOrFail(this.$data.groups, (e) => e.groupName == groupName)
-      );
-
-      try {
-        await apiAction("PUT", apiChannelGroup(channelId, groupName));
-      } catch (e) {
-        alertAndThrow(e, "failed to create channel group");
-        return;
-      }
     },
   },
 });
