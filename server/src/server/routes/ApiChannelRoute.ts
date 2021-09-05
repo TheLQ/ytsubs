@@ -2,7 +2,6 @@ import express from "express";
 import { Context } from "..";
 import { ARG_CHANNEL_ID } from "../../common/routes/ApiChannelRoute";
 import { ARG_GROUP_NAME } from "../../common/routes/ApiGroupRoute";
-import { sleep } from "../../common/util/langutils";
 
 export async function getApiChannel(
   req: express.Request,

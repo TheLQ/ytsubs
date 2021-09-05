@@ -33,6 +33,7 @@ import {
   POST_YOUTUBE_CHANNELS,
   POST_YOUTUBE_CHANNELS_UPDATE,
 } from "../common/routes/ApiYoutubeRoute";
+import { sleep } from "../common/util/langutils";
 
 const log = logger("server");
 log.info("Starting app");
@@ -105,6 +106,7 @@ export function prehandle(callback: UwsCallback, context: Context) {
     res: express.Response
   ): Promise<void> {
     log.http(`-- ${req.method} ${req.url}`);
+    sleep(4000);
     try {
       setCors(res);
 

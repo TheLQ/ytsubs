@@ -10,7 +10,7 @@ export function apiGroup(groupName: string) {
 
 export const API_GROUP_COLOR = `/api/group/:${ARG_GROUP_NAME}/color/:${ARG_COLOR}`;
 export function apiGroupColor(groupName: string, color: string) {
-  return API_GROUP.replace(":" + ARG_GROUP_NAME, groupName).replace(
+  return API_GROUP_COLOR.replace(":" + ARG_GROUP_NAME, groupName).replace(
     ":" + ARG_COLOR,
     color
   );
