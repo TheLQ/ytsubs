@@ -46,6 +46,10 @@ header #appname {
   margin: 20px;
 }
 
+nav {
+  display: inline;
+}
+
 header .router-link-active {
   height: 100%;
   background-color: lightgray;
