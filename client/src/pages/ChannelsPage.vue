@@ -21,6 +21,14 @@
         </button>
       </fieldset>
 
+      <GroupSelector
+        name="Include Groups"
+        :groups-applied="groupIncludeApplied"
+        :add-none-all-groups="true"
+        query-parameter="groupsInclude"
+        @new-groups-applied="groupsIncludeUpdate"
+      />
+
       <fieldset>
         <legend>Add group</legend>
         <input
@@ -83,7 +91,7 @@
   <main>
     <LoadingBox />
     <ul>
-      <li v-for="channel of channels">
+      <li v-for="channel of channelsFiltered">
         <a :href="'https://www.youtube.com/channel/' + channel.channelId">{{
           channel.channelName
         }}</a>
@@ -104,6 +112,7 @@ import { defineComponent } from "vue";
 import {
   SubscriptionStorage,
   ChannelGroup,
+  GROUP_MAGIC_NONE,
 } from "../../../server/src/common/util/storage";
 import {
   apiGroup,
@@ -114,11 +123,7 @@ import {
   GET_API_CHANNEL,
   apiChannelGroup,
 } from "../../../server/src/common/routes/ApiChannelRoute";
-import {
-  findOrFail,
-  findIndexOrFail,
-  stringSort,
-} from "../../../server/src/common/util/langutils";
+import { findOrFail } from "../../../server/src/common/util/langutils";
 import { apiGetData, alertAndThrow, apiAction } from "../util/httputils";
 import LoadingBox from "../components/LoadingBox.vue";
 import GroupsDisplay, { MappingEvent } from "../components/GroupsDisplay.vue";
@@ -134,6 +139,7 @@ interface Channel extends SubscriptionStorage {
 
 interface MyData {
   channels: Channel[];
+  groupIncludeApplied: string[];
   groupAddName: string;
   groupAddNameWorking: boolean;
   groupEditName: string;
@@ -144,6 +150,7 @@ interface MyData {
 export default defineComponent({
   name: "ChannelsPage",
   components: {
+    GroupSelector,
     GroupsDisplay,
     LoadingBox,
   },
@@ -153,6 +160,7 @@ export default defineComponent({
   data() {
     return {
       channels: [],
+      groupIncludeApplied: [],
       groupAddName: "",
       groupAddNameWorking: false,
       groupEditName: "",
@@ -166,6 +174,27 @@ export default defineComponent({
     },
     groupEditEnabled(): boolean {
       return this.groupEditWorking || this.groupEditName == "";
+    },
+    channelsFiltered(): Channel[] {
+      // filtering on the server is silly for this number of channels
+      // instead filter client side
+      if (this.groupIncludeApplied.length == 0) {
+        return this.channels;
+      } else {
+        return this.channels.filter((channel) => {
+          const channelGroups = channel.groups?.split(",") || [];
+          for (const groupInclude of this.groupIncludeApplied) {
+            if (groupInclude == GROUP_MAGIC_NONE) {
+              if (channelGroups.length == 0) {
+                return true;
+              }
+            } else if (channelGroups.indexOf(groupInclude) != -1) {
+              return true;
+            }
+          }
+          return false;
+        });
+      }
     },
   },
   //
@@ -196,6 +225,13 @@ export default defineComponent({
       }
 
       this.$store.commit(MutationTypes.LOADING_DONE, loadingMessage);
+    },
+    /**
+     * Group include form - on check, update UI
+     */
+    groupsIncludeUpdate(event: string[]): void {
+      this.groupIncludeApplied = event;
+      // groups will self filter in computed property
     },
     /**
      * Group add form - on submit, update API and UI
