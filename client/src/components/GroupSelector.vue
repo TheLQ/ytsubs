@@ -26,15 +26,11 @@
         <li v-if="addNoneAllGroups">
           <label>
             All
-            <input type="checkbox" name="magicAppliedForm" v-model="magicAll" />
+            <input type="radio" name="magicAppliedForm" v-model="magicAll" />
           </label>
           <label>
             None
-            <input
-              type="checkbox"
-              name="magicAppliedForm"
-              v-model="magicNone"
-            />
+            <input type="radio" name="magicAppliedForm" v-model="magicNone" />
           </label>
         </li>
       </ul>

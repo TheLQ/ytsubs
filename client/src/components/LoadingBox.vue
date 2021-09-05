@@ -24,12 +24,12 @@ export default defineComponent({
   //
   computed: {
     messages() {
-      return this.$store.state.loadingProgress
-    }
+      return this.$store.state.loadingProgress;
+    },
   },
   methods: {
     isLoadingDone,
-  }
+  },
 });
 </script>
 

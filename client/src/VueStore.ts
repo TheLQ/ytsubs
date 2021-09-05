@@ -89,13 +89,18 @@ const mutations: MutationTree<YsState> & Mutations = {
   },
 
   [MutationTypes.LOADING_ADD](state, message: string): void {
+    console.log("LOADING ADD: " + message);
     state.loadingProgress.push({
       message,
       done: false,
     });
   },
   [MutationTypes.LOADING_DONE](state, message: string): void {
-    const entry = findOrFail(state.loadingProgress, (e) => e.message == message);
+    console.log("LOADING DONE: " + message);
+    const entry = findOrFail(
+      state.loadingProgress,
+      (e) => e.message == message
+    );
     entry.done = true;
 
     let allDone = true;
@@ -106,7 +111,7 @@ const mutations: MutationTree<YsState> & Mutations = {
       }
     }
     if (allDone) {
-      console.log("loading done")
+      console.log("ALL LOADING DONE");
       state.loadingProgress.length = 0;
     }
   },

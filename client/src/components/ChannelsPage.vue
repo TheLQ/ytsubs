@@ -124,7 +124,7 @@ interface MyData {
 export default defineComponent({
   name: "ChannelsPage",
   components: {
-    LoadingBox
+    LoadingBox,
   },
   data() {
     return {

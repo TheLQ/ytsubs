@@ -86,7 +86,7 @@
             :channel-id="video.channelId"
             :groups-applied="video.groups?.split(',') || []"
             :add-displayed="true"
-            @new-channel-group-mapping="onNewChannelMapping"
+            @mapping-event="onNewChannelMapping"
           />
         </div>
         <div class="video-published">
@@ -119,9 +119,13 @@ import {
   alertAndThrow,
   changeQueryArray,
 } from "../util/httputils";
-import GroupsDisplay, { NewMappingEvent } from "./GroupsDisplay.vue";
+import GroupsDisplay, { MappingEvent } from "./GroupsDisplay.vue";
 import GroupSelector from "./GroupSelector.vue";
-import { copyArray as copyArrayTo } from "../../../server/src/common/util/langutils";
+import {
+  copyArray as copyArrayTo,
+  findOrFail,
+  removeOrFail,
+} from "../../../server/src/common/util/langutils";
 import LoadingBox, { isLoadingDone } from "./LoadingBox.vue";
 import { MutationTypes } from "../VueStore";
 
@@ -191,7 +195,6 @@ export default defineComponent({
         };
         // everything is proxied so stringify
         const loadingMessage = "Loading Videos " + JSON.stringify(reqJson);
-        console.log(loadingMessage);
         this.$store.commit(MutationTypes.LOADING_ADD, loadingMessage);
         const result = (await apiSendData(
           "POST",
@@ -285,13 +288,28 @@ export default defineComponent({
       await this.refreshVideos();
     },
     //
-    onNewChannelMapping(event: NewMappingEvent) {
-      console.log("event", JSON.stringify(event));
+    onNewChannelMapping(event: MappingEvent) {
+      console.log("newChannelMapping event", JSON.stringify(event));
+
+      let groups =
+        findOrFail(
+          this.videos,
+          (e) => e.channelId == event.channelId
+        ).groups?.split(",") || [];
+      if (event.adding) {
+        groups.push(event.group);
+      } else {
+        removeOrFail(groups, (e) => e == event.group);
+      }
+
+      // if empty, reset array to undefined (from sql) instead of [""]
+      const groupsValue = groups.length == 0 ? undefined : groups.join(",");
+
       // apply new mapping to all videos on current page
       // subsequent pages will re-query so have new groups
       for (const video of this.videos) {
         if (video.channelId == event.channelId) {
-          video.groups = event.groups.join(",");
+          video.groups = groupsValue;
         }
       }
     },

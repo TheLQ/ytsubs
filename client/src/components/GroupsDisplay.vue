@@ -2,30 +2,30 @@
   <div class="channel-tag-wrapper">
     <span
       class="channel-tag"
-      v-for="group of groupsFiltered"
+      v-for="group of groupsAppliedObjects"
       :style="getGroupColorStyle(group)"
     >
       {{ group.groupName }}
     </span>
 
     <form v-if="addDisplayed">
-      <button alt="Add tag" type="button" @click="toggleFormDisplayed()">
-        +
+      <button
+        alt="Add tag"
+        type="button"
+        @click="toggleFormDisplayed()"
+        :disabled="toggleSavingCounter != 0"
+      >
+        <template v-if="toggleSavingCounter == 0"> {{ toggleValue }} </template>
+        <template v-else>Saving... {{ toggleSavingCounter }}</template>
       </button>
 
       <div v-if="formDisplayed">
         <GroupSelector
           name="Set Channel Groups"
-          :groups-applied="groupsAppliedWorking"
+          :groups-applied="groupsApplied"
           :add-none-all-groups="false"
-          @new-groups-applied="onFormGroupUpdate($event)"
+          @new-groups-applied="onGroupSelectorUpdate($event)"
         />
-        <!-- @new-groups="$emit('newGroups', $event)" -->
-
-        <button type="submit" @click.prevent="apply()">
-          Submit New Groups
-        </button>
-        <button type="button" @click="toggleFormDisplayed()">Cancel</button>
       </div>
     </form>
   </div>
@@ -42,17 +42,26 @@ import { getGroupColorStyle } from "../utils";
 import {
   copyArray,
   findOrFail,
+  promiseAllThrow,
+  removeOrFail,
 } from "../../../server/src/common/util/langutils";
 import { ActionTypes, MutationTypes } from "../VueStore";
+import { apiAction, apiSendData } from "../util/httputils";
+import { apiChannelGroup } from "../../../server/src/common/routes/ApiChannelRoute";
+
+const toggleValueClose = "Close";
+const toggleValueOpen = "x";
 
 interface MyData {
+  toggleValue: string;
+  toggleSavingCounter: number;
   formDisplayed: boolean;
-  groupsAppliedWorking: string[];
 }
 
-export interface NewMappingEvent {
+export interface MappingEvent {
   channelId: string;
-  groups: string[];
+  group: string;
+  adding: boolean;
 }
 
 export default defineComponent({
@@ -76,55 +85,90 @@ export default defineComponent({
   },
   data() {
     return {
+      toggleValue: toggleValueOpen,
+      toggleSavingCounter: 0,
       formDisplayed: false,
-      groupsAppliedWorking: [],
     } as MyData;
   },
   computed: {
-    groupsFiltered() {
+    groupsAppliedObjects() {
       // console.log("groupsApplied" + JSON.stringify(this.groupsApplied));
       return this.groupsApplied.map((name) => {
         // console.log("finding group " + name + " in " + JSON.stringify(this.groupsApplied));
-        const res = findOrFail(this.$store.state.groups, (group) => group.groupName == name);
+        const res = findOrFail(
+          this.$store.state.groups,
+          (group) => group.groupName == name
+        );
         // console.log("done finding group " + name + " in " + JSON.stringify(this.groupsApplied));
         return res;
       });
     },
   },
   emits: {
-    newChannelGroupMapping: (payload: NewMappingEvent) => payload,
+    mappingEvent: (payload: MappingEvent) => payload,
     newGroups: (payload: ChannelGroup[]) => payload,
   },
   methods: {
     getGroupColorStyle,
-    // groupAddFormGroupsUpdate(groups: string[]) {
-    //   this.groupAddFormGroups = groups;
-    // },
-    apply() {
-      console.log(
-        "groupsAppliedWorking" + JSON.stringify(this.groupsAppliedWorking)
-      );
-      this.$emit("newChannelGroupMapping", {
-        channelId: this.channelId,
-        groups: this.groupsAppliedWorking,
-      });
-
-      // reset
-      this.toggleFormDisplayed();
-    },
+    /**
+     * hide or show form
+     */
     toggleFormDisplayed() {
       if (this.formDisplayed) {
         this.formDisplayed = false;
+        this.toggleValue = toggleValueOpen;
       } else {
         this.formDisplayed = true;
-
-        this.groupsAppliedWorking.length = 0;
-        copyArray(this.groupsApplied, this.groupsAppliedWorking);
+        this.toggleValue = toggleValueClose;
       }
     },
-    onFormGroupUpdate(groups: string[]) {
-      this.groupsApplied.length = 0;
-      copyArray(groups, this.groupsApplied);
+    /**
+     * immediately persist any change in checkbox
+     */
+    async onGroupSelectorUpdate(groups: string[]) {
+      console.log("calling on update");
+      // 2 stage diff, could have multiple changes
+      const groupsAppliedPrevious = Array.from(this.groupsApplied);
+      const promiseQueue: Promise<void>[] = [];
+      for (const group of groups) {
+        if (groupsAppliedPrevious.indexOf(group) == -1) {
+          this.toggleSavingCounter++;
+          const apiResult = apiAction(
+            "PUT",
+            apiChannelGroup(this.channelId, group)
+          );
+          apiResult.then(() => {
+            this.toggleSavingCounter--;
+            this.$emit("mappingEvent", {
+              channelId: this.channelId,
+              group: group,
+              adding: true,
+            });
+          });
+          promiseQueue.push(apiResult);
+        }
+      }
+      for (const group of groupsAppliedPrevious) {
+        if (groups.indexOf(group) == -1) {
+          this.toggleSavingCounter++;
+          const apiResult = apiAction(
+            "DELETE",
+            apiChannelGroup(this.channelId, group)
+          );
+          apiResult.then(() => {
+            this.toggleSavingCounter--;
+            this.$emit("mappingEvent", {
+              channelId: this.channelId,
+              group: group,
+              adding: false,
+            });
+          });
+          promiseQueue.push(apiResult);
+        }
+      }
+
+      await promiseAllThrow(promiseQueue, "could not save groups");
+      this.toggleValue = toggleValueClose;
     },
   },
 });

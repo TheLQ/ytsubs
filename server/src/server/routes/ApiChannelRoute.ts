@@ -2,6 +2,7 @@ import express from "express";
 import { Context } from "..";
 import { ARG_CHANNEL_ID } from "../../common/routes/ApiChannelRoute";
 import { ARG_GROUP_NAME } from "../../common/routes/ApiGroupRoute";
+import { sleep } from "../../common/util/langutils";
 
 export async function getApiChannel(
   req: express.Request,
@@ -26,6 +27,7 @@ export async function putApiChannelGroup(
       groupName,
     },
   ]);
+
   // res.end(`added group ${groupName} to channel ${channelId}`)
   res.end("1");
 }
@@ -37,6 +39,7 @@ export async function deleteApiChannelGroup(
 ): Promise<void> {
   const channelId = req.params[ARG_CHANNEL_ID];
   const groupName = req.params[ARG_GROUP_NAME];
+
   await context.db.removeChannelGroupMapping([
     {
       channelId,
