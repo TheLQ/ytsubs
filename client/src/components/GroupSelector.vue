@@ -26,11 +26,11 @@
         <li v-if="addNoneAllGroups">
           <label>
             All
-            <input type="radio" name="magicAppliedForm" v-model="magicAll" />
+            <input type="radio" name="magicAppliedForm" value="All" v-model="magicAllNone" @click="groupAllSelected(true)" />
           </label>
           <label>
             None
-            <input type="radio" name="magicAppliedForm" v-model="magicNone" />
+            <input type="radio" name="magicAppliedForm" value="None" v-model="magicAllNone" @click="groupAllSelected(false)" />
           </label>
         </li>
       </ul>
@@ -47,12 +47,11 @@ import {
   GroupFilter,
   GROUP_MAGIC_NONE,
 } from "../../../server/src/common/util/storage";
-import { alertAndThrow, apiGetData, changeQueryArray } from "../util/httputils";
 import { getGroupColorStyle } from "../utils";
 
 const NONE_GROUP: ChannelGroup = {
   groupName: GROUP_MAGIC_NONE,
-  color: "000000",
+  color: "FFFFFF",
 };
 
 // This doesn't make any sense on the db side, only for client UI tracking
@@ -63,8 +62,7 @@ const ALL_GROUP: ChannelGroup = {
 };
 
 interface MyData {
-  magicAll: boolean;
-  magicNone: boolean;
+  magicAllNone: string;
 }
 
 export default defineComponent({
@@ -90,8 +88,7 @@ export default defineComponent({
   },
   data() {
     return {
-      magicAll: false,
-      magicNone: false,
+      magicAllNone: "",
     } as MyData;
   },
   // -- events
@@ -103,7 +100,6 @@ export default defineComponent({
       if (this.addNoneAllGroups) {
         const result = Array.from(this.$store.state.groups);
         result.push(NONE_GROUP);
-        result.push(ALL_GROUP);
         return result;
       } else {
         return this.$store.state.groups;
@@ -209,6 +205,14 @@ export default defineComponent({
       }
       this.$emit("newGroupsApplied", groupsToApply);
 
+      if (groupsToApply.length == this.groupsAll.length) {
+        this.magicAllNone = "All";
+      } else if (groupsToApply.length == 0) {
+        this.magicAllNone = "None";
+      } else {
+        this.magicAllNone = "";
+      }
+
       this._paramsUpdate();
     },
     /**
@@ -222,7 +226,7 @@ export default defineComponent({
       if (selected) {
         this.$emit(
           "newGroupsApplied",
-          this.$store.state.groups.map((e) => e.groupName)
+          this.groupsAll.map((e) => e.groupName)
         );
       } else {
         this.$emit("newGroupsApplied", []);

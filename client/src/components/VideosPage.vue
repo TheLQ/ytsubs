@@ -6,7 +6,7 @@
         :groups-applied="groupIncludeApplied"
         :add-none-all-groups="true"
         query-parameter="groupsInclude"
-        @new-groups-selected="groupsIncludeUpdate"
+        @new-groups-applied="groupsIncludeUpdate"
       />
 
       <fieldset>
