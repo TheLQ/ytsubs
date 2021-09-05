@@ -15,7 +15,11 @@ import {
 import { GET_API_GROUP } from "../../server/src/common/routes/ApiGroupRoute";
 import { apiGetData, alertAndThrow } from "./util/httputils";
 import { InjectionKey } from "vue";
-import { copyArray, findOrFail } from "../../server/src/common/util/langutils";
+import {
+  copyArray,
+  findOrFail,
+  removeOrFail,
+} from "../../server/src/common/util/langutils";
 
 /*
  * Typesafe Vuex Store
@@ -57,7 +61,9 @@ export interface LoadingEntry {
  * Mutation keys
  */
 export enum MutationTypes {
-  GROUPS_ADD = "GROUPS_ADD",
+  GROUP_ADD = "GROUP_ADD",
+  GROUP_DELETE = "GROUP_DELETE",
+  GROUP_COLOR = "GROUP_COLOR",
   GROUP_MAPPINGS_ADD = "GROUP_MAPPINGS_ADD",
   LOADING_ADD = "LOADING_ADD",
   LOADING_DONE = "LOADING_DONE",
@@ -67,7 +73,9 @@ export enum MutationTypes {
  * Mutation type definition
  */
 type Mutations<S = YsState> = {
-  [MutationTypes.GROUPS_ADD](state: S, payload: ChannelGroup[]): void;
+  [MutationTypes.GROUP_ADD](state: S, payload: ChannelGroup[]): void;
+  [MutationTypes.GROUP_DELETE](state: S, groupName: string): void;
+  [MutationTypes.GROUP_COLOR](state: S, payload: GroupColorPayload): void;
   [MutationTypes.GROUP_MAPPINGS_ADD](
     state: S,
     payload: ChannelGroupMapping[]
@@ -75,13 +83,24 @@ type Mutations<S = YsState> = {
   [MutationTypes.LOADING_ADD](state: S, payload: string): void;
   [MutationTypes.LOADING_DONE](state: S, payload: string): void;
 };
+interface GroupColorPayload {
+  group: string;
+  color: string;
+}
 
 /**
  * Mutation implementation
  */
 const mutations: MutationTree<YsState> & Mutations = {
-  [MutationTypes.GROUPS_ADD](state, payload: ChannelGroup[]): void {
+  [MutationTypes.GROUP_ADD](state, payload: ChannelGroup[]): void {
     copyArray(payload, state.groups);
+  },
+  [MutationTypes.GROUP_DELETE](state, groupName: string): void {
+    removeOrFail(state.groups, (e) => e.groupName == groupName);
+  },
+  [MutationTypes.GROUP_COLOR](state, payload: GroupColorPayload): void {
+    const group = findOrFail(state.groups, (e) => e.groupName == payload.group);
+    group.color = payload.color;
   },
   [MutationTypes.GROUP_MAPPINGS_ADD](
     state,
@@ -89,7 +108,6 @@ const mutations: MutationTree<YsState> & Mutations = {
   ): void {
     copyArray(payload, state.groupMappings);
   },
-
   [MutationTypes.LOADING_ADD](state, message: string): void {
     console.log("LOADING ADD: " + message);
     state.loadingProgress.push({
@@ -164,7 +182,7 @@ interface Actions {
 const actions: ActionTree<YsState, YsState> & Actions = {
   async [ActionTypes.GROUPS_LOAD]({ commit }, loadingMessage: string) {
     commit(MutationTypes.LOADING_ADD, loadingMessage);
-    commit(MutationTypes.GROUPS_ADD, await _loadGroups());
+    commit(MutationTypes.GROUP_ADD, await _loadGroups());
     commit(MutationTypes.LOADING_DONE, loadingMessage);
   },
   [ActionTypes.GROUP_MAPPINGS_LOAD]({ commit }) {
@@ -175,6 +193,7 @@ const actions: ActionTree<YsState, YsState> & Actions = {
 export async function _loadGroups() {
   try {
     const groups = (await apiGetData("GET", GET_API_GROUP)) as ChannelGroup[];
+    console.log("groups", groups);
     return groups;
   } catch (e) {
     throw alertAndThrow(e, "failed to get groups");

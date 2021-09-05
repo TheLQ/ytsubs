@@ -10,6 +10,10 @@ export async function apiSendData(
   path: string,
   reqJson: any
 ): Promise<any> {
+  console.trace(
+    `API SendData ${method} ${path}`,
+    JSON.parse(JSON.stringify(reqJson))
+  );
   const res = await fetch("http://127.0.0.1:3001" + path, {
     headers: {
       "content-type": "application/json",
@@ -17,6 +21,7 @@ export async function apiSendData(
     method,
     body: JSON.stringify(reqJson),
   });
+  await assertCode200(res);
   return await readJson(res);
 }
 
@@ -24,9 +29,11 @@ export async function apiSendData(
  * api call returns json on success
  */
 export async function apiGetData(method: string, path: string): Promise<any> {
+  console.trace(`API GetData ${method} ${path}`);
   const res = await fetch("http://127.0.0.1:3001" + path, {
     method,
   });
+  await assertCode200(res);
   return await readJson(res);
 }
 
@@ -53,19 +60,30 @@ async function readJson(res: Response) {
  * api call returns 1 on success
  */
 export async function apiAction(method: string, path: string): Promise<void> {
+  console.trace(`API Action ${method} ${path}`);
   const res = await fetch("http://127.0.0.1:3001" + path, {
     method,
   });
+  await assertCode200(res);
   const body = await res.text();
   if (body != "1") {
     throw new Error("call unsuccessful\n" + body);
   }
 }
 
+async function assertCode200(res: Response) {
+  if (res.status != 200) {
+    const body = await res.text();
+    throw new Error("received error " + res.status + " body " + body);
+  }
+}
+
 export function alertAndThrow(e: any, message: string) {
   const eString = e.toString ? e.toString() : e;
 
-  alert(message + "\n" + e);
+  const failMessage = message + "\n" + eString;
+  console.error("ALERT " + failMessage);
+  alert(failMessage);
   throw e;
 }
 

@@ -76,6 +76,13 @@ async function init() {
       }
     });
 
+    // Handle 404 - Keep this as a last route
+    app.use(function (req, res, next) {
+      setCors(res);
+      res.status(404);
+      res.end();
+    });
+
     const bindAddress =
       process.env.USER === "dev" || true ? "0.0.0.0" : "127.0.0.1";
     app.listen(port, bindAddress, () => {
@@ -106,7 +113,9 @@ export function prehandle(callback: UwsCallback, context: Context) {
     res: express.Response
   ): Promise<void> {
     log.http(`-- ${req.method} ${req.url}`);
-    sleep(4000);
+    // if (req.method != "OPTIONS") {
+    //   await sleep(4000);
+    // }
     try {
       setCors(res);
 

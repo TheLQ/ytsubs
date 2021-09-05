@@ -9,44 +9,74 @@
             >Youtube Subscription Manager</a
           >
           <input type="file" name="xml" />
-          <button type="button" name="uploadSubscriptions">
+          <button type="button" name="uploadSubscriptions" :disabled="true">
             Upload Subscriptions File
           </button>
         </label>
 
-        <hr/>
-        
-        <button type="button" name="syncSubscriptions">
+        <hr />
+
+        <button type="button" name="syncSubscriptions" :disabled="true">
           Sync from Youtube
         </button>
       </fieldset>
-      
+
       <fieldset>
         <legend>Add group</legend>
-        <input type="text" v-model="addGroupName" />
-        <button type="button">Add Group</button>
-      </fieldset>
-      
-      <fieldset>
-        <legend>Group Edit</legend>
-        <select v-model="groupColorName">
-          <option></option>
-          <option v-for="group of groups">
-            {{ group.groupName }}
-          </option>
-        </select>
-        <input type="color" v-model="groupColorValue" />
-        <button type="button" @click.prevent="setGroupColor()">
-          Set Group Color
+        <input
+          type="text"
+          v-model="groupAddName"
+          :disabled="groupAddNameWorking"
+        />
+        <button
+          type="button"
+          :disabled="groupAddNameWorking"
+          @click="groupAddApply"
+        >
+          Add Group
         </button>
       </fieldset>
 
-      
+      <fieldset>
+        <legend>Group Edit</legend>
+        <select
+          v-model="groupEditName"
+          @change="groupEditNameApply"
+          :disabled="groupEditWorking"
+        >
+          <option v-for="group of groups" :style="getGroupColorStyle(group)">
+            {{ group.groupName }}
+          </option>
+        </select>
+
+        <hr />
+
+        <label>
+          <input
+            type="color"
+            v-model="groupEditColor"
+            :disabled="groupEditEnabled"
+            @change="groupEditColorApply"
+          />
+          Color
+        </label>
+
+        <hr />
+
+        <button
+          type="button"
+          :disabled="groupEditEnabled"
+          @click="groupEditDelete"
+        >
+          Delete
+        </button>
+      </fieldset>
+
       <fieldset>
         <legend>debug</legend>
-          <button type="button" name="checkYoutubeAuth">
-            Check Youtube Auth
-          </button>
+        <button type="button" name="checkYoutubeAuth" :disabled="true">
+          Check Youtube Auth
+        </button>
       </fieldset>
     </form>
   </div>
@@ -62,7 +92,7 @@
           :channel-id="channel.channelId"
           :groups-applied="channel.groups?.split(',') || []"
           :add-displayed="true"
-          @mapping-event="onNewChannelMapping"
+          @mapping-event="channelMappingApply"
         />
       </li>
     </ul>
@@ -76,6 +106,7 @@ import {
   ChannelGroup,
 } from "../../../server/src/common/util/storage";
 import {
+  apiGroup,
   apiGroupColor,
   GET_API_GROUP,
 } from "../../../server/src/common/routes/ApiGroupRoute";
@@ -95,6 +126,7 @@ import { MutationTypes } from "../VueStore";
 import GroupSelector, {
   updateGroupSelected,
 } from "../components/GroupSelector.vue";
+import { getGroupColorStyle } from "../utils";
 
 interface Channel extends SubscriptionStorage {
   groupsInfo: ChannelGroup[];
@@ -102,10 +134,11 @@ interface Channel extends SubscriptionStorage {
 
 interface MyData {
   channels: Channel[];
-  groups: ChannelGroup[];
-  addGroupName: string;
-  groupColorName: string;
-  groupColorValue: string;
+  groupAddName: string;
+  groupAddNameWorking: boolean;
+  groupEditName: string;
+  groupEditColor: string | null;
+  groupEditWorking: boolean;
 }
 
 export default defineComponent({
@@ -114,41 +147,42 @@ export default defineComponent({
     GroupsDisplay,
     LoadingBox,
   },
+  //
+  // Data
+  //
   data() {
     return {
       channels: [],
-      groups: [],
-      addGroupName: "",
-      groupColorName: "",
-      groupColorValue: "",
+      groupAddName: "",
+      groupAddNameWorking: false,
+      groupEditName: "",
+      groupEditColor: null,
+      groupEditWorking: false,
     } as MyData;
   },
+  computed: {
+    groups(): ChannelGroup[] {
+      return this.$store.state.groups;
+    },
+    groupEditEnabled(): boolean {
+      return this.groupEditWorking || this.groupEditName == "";
+    },
+  },
+  //
+  // events
+  //
   async mounted() {
     this._refreshSubscriptions();
-    // try {
-
-    //   // TS: Comes in as SubscriptionStorage but we add the Channel groupsInfo
-    //   const channels = (await apiGetData("GET", GET_API_CHANNEL)) as Channel[];
-    //   this.channels = channels.map((entry) => {
-    //     if (entry.groups) {
-    //       entry.groupsInfo = entry.groups
-    //         .split(",")
-    //         .map((groupNeedle) =>
-    //           findOrFail(this.groups, (e) => e.groupName == groupNeedle)
-    //         );
-    //       entry.groupsInfo.sort((a, b) => stringSort(a.groupName, b.groupName));
-    //     } else {
-    //       entry.groupsInfo = [];
-    //     }
-    //     return entry;
-    //   });
-    // } catch (e) {
-    //   alertAndThrow(e, "failed to get channels");
-    //   return;
-    // }
   },
+  //
+  // Methods
+  //
   methods: {
-    async _refreshSubscriptions() {
+    getGroupColorStyle,
+    /**
+     * Load channels from API
+     */
+    async _refreshSubscriptions(): Promise<void> {
       const loadingMessage = "Loading channels...";
       this.$store.commit(MutationTypes.LOADING_ADD, loadingMessage);
       try {
@@ -164,46 +198,89 @@ export default defineComponent({
       this.$store.commit(MutationTypes.LOADING_DONE, loadingMessage);
     },
     /**
-     * Update selected channel's groups
-     * UI update only, API already updated
+     * Group add form - on submit, update API and UI
      */
-    onNewChannelMapping(event: MappingEvent) {
+    async groupAddApply(): Promise<void> {
+      this.groupAddNameWorking = true;
+      try {
+        await apiAction("PUT", apiGroup(this.groupAddName));
+      } catch (e) {
+        throw alertAndThrow(e, "failed to add group");
+      }
+
+      this.$store.commit(MutationTypes.GROUP_ADD, [
+        {
+          groupName: this.groupAddName,
+          color: null,
+        },
+      ]);
+      this.groupAddName = "";
+      this.groupAddNameWorking = false;
+    },
+    /**
+     * Group edit form - on group select, update UI
+     */
+    groupEditNameApply(): void {
+      const group = findOrFail(
+        this.groups,
+        (e) => e.groupName == this.groupEditName
+      );
+      if (group.color != null) {
+        this.groupEditColor = "#" + group.color;
+      } else {
+        this.groupEditColor = null;
+      }
+    },
+    /**
+     * Group edit form - On changed color input, update API and UI
+     */
+    async groupEditColorApply(): Promise<void> {
+      if (this.groupEditColor == null) {
+        alert("please select color");
+        return;
+      }
+      // color without # prefix
+      const color = this.groupEditColor.substring(1);
+
+      this.groupEditWorking = true;
+      try {
+        await apiAction("PUT", apiGroupColor(this.groupEditName, color));
+      } catch (e) {
+        throw alertAndThrow(e, "failed to set group color");
+      }
+
+      this.$store.commit(MutationTypes.GROUP_COLOR, {
+        group: this.groupEditName,
+        color,
+      });
+      this.groupEditWorking = false;
+    },
+    /**
+     * Group edit form - On delete submit, update API and UI
+     */
+    async groupEditDelete(): Promise<void> {
+      this.groupEditWorking = true;
+      try {
+        await apiAction("DELETE", apiGroup(this.groupEditName));
+      } catch (e) {
+        throw alertAndThrow(e, "failed to set group color");
+      }
+
+      this.$store.commit(MutationTypes.GROUP_DELETE, this.groupEditName);
+      this.groupEditWorking = false;
+    },
+    /**
+     * Channel's group form - On group (un)selected, update UI. API already updated by component.
+     */
+    channelMappingApply(event: MappingEvent): void {
       const channel = findOrFail(
         this.channels,
         (e) => e.channelId == event.channelId
       );
       channel.groups = updateGroupSelected(event, channel.groups);
     },
-    async setGroupColor(): Promise<void> {
-      console.log(this.groupColorName + " val " + this.groupColorValue);
-      if (this.groupColorName == "") {
-        alert("please select group");
-        return;
-      }
-      if (this.groupColorValue == "") {
-        alert("please select color");
-        return;
-      }
-      const color = this.groupColorValue.substring(1);
-
-      const group = findOrFail(
-        this.groups,
-        (e) => e.groupName == this.groupColorName
-      );
-      group.color = color;
-
-      try {
-        await apiAction("PUT", apiGroupColor(group.groupName, color));
-      } catch (e) {
-        alertAndThrow(e, "failed to set group color");
-        return;
-      }
-
-      this.groupColorName = "";
-    },
   },
 });
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>
