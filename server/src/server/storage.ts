@@ -161,6 +161,20 @@ export class Storage {
     try {
       const sqlPlaceholders: any[] = [];
 
+      const whereConditions: string[] = [];
+      if (options.channelId !== undefined) {
+        whereConditions.push("videos.channelId = ?");
+        sqlPlaceholders.push(options.channelId);
+      }
+      if (options.publishedAfter !== undefined) {
+        whereConditions.push("datetime(published) < datetime(?)");
+        sqlPlaceholders.push(options.publishedAfter);
+      }
+      const whereQuery =
+        whereConditions.length == 0
+          ? ""
+          : " WHERE " + whereConditions.join(" AND ");
+
       const havingConditions: string[] = [];
       if (options.groups !== undefined && options.groups.length > 0) {
         // Include = *any* channel contains the groups
@@ -196,20 +210,6 @@ export class Storage {
         havingConditions.length == 0
           ? ""
           : " HAVING " + havingConditions.join(" AND ");
-
-      const whereConditions: string[] = [];
-      if (options.channelId !== undefined) {
-        whereConditions.push("videos.channelId = ?");
-        sqlPlaceholders.push(options.channelId);
-      }
-      if (options.publishedAfter !== undefined) {
-        whereConditions.push("datetime(published) < datetime(?)");
-        sqlPlaceholders.push(options.publishedAfter);
-      }
-      const whereQuery =
-        whereConditions.length == 0
-          ? ""
-          : " WHERE " + whereConditions.join(" AND ");
 
       sql = `
       SELECT
