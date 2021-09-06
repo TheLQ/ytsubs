@@ -2,6 +2,12 @@ import { LocationQuery } from "vue-router";
 import { WrappedError } from "../../../server/src/common/util/error";
 import { removeOrFail } from "../../../server/src/common/util/langutils";
 
+const backendServer = import.meta.env.VITE_API_URL;
+console.log("backend server " + backendServer)
+if (backendServer == undefined) {
+  throw new Error("init fail no backend server")
+}
+
 /**
  * send json to api call, api call returns json on success
  */
@@ -14,7 +20,7 @@ export async function apiSendData(
     `API SendData ${method} ${path}`,
     JSON.parse(JSON.stringify(reqJson))
   );
-  const res = await fetch("http://127.0.0.1:3001" + path, {
+  const res = await fetch(backendServer + path, {
     headers: {
       "content-type": "application/json",
     },
@@ -30,7 +36,7 @@ export async function apiSendData(
  */
 export async function apiGetData(method: string, path: string): Promise<any> {
   console.trace(`API GetData ${method} ${path}`);
-  const res = await fetch("http://127.0.0.1:3001" + path, {
+  const res = await fetch(backendServer + path, {
     method,
   });
   await assertCode200(res);
@@ -61,7 +67,7 @@ async function readJson(res: Response) {
  */
 export async function apiAction(method: string, path: string): Promise<void> {
   console.trace(`API Action ${method} ${path}`);
-  const res = await fetch("http://127.0.0.1:3001" + path, {
+  const res = await fetch(backendServer + path, {
     method,
   });
   await assertCode200(res);

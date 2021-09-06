@@ -48,7 +48,7 @@ async function init() {
 
     app.use(express.json());
 
-    app.use(express.static("../client/dist"));
+    app.use(express.static("disthtml"));
     // app.use("/client", express.static("dist/client"));
     // app.use("/src", express.static("src"));
 
@@ -86,7 +86,10 @@ async function init() {
     });
 
     const bindAddress =
-      process.env.USER === "dev" || true ? "0.0.0.0" : "127.0.0.1";
+      process.argv[process.argv.length - 1] == "--public"
+        ? "0.0.0.0"
+        : "127.0.0.1";
+
     app.listen(port, bindAddress, () => {
       console.log(`Example app listening at http://${bindAddress}:${port}`);
     });
@@ -144,8 +147,8 @@ export function optionsCors(
 
 function setCors(res: express.Response) {
   // Allow the dev web server to connect to this backend server
-  // TODO: Set origin to be less restrictive...
-  res.setHeader("Access-Control-Allow-Origin", "http://127.0.0.1:3000");
+  // TODO: Set origin to be less restrictive... http://127.0.0.1:3000
+  res.setHeader("Access-Control-Allow-Origin", "https://ytsubs.xana.sh");
   res.setHeader("Access-Control-Allow-Methods", "POST, DELETE, PUT");
   res.setHeader("Access-Control-Allow-Headers", "content-type");
 }
