@@ -19,7 +19,9 @@ import {
   copyArray,
   findOrFail,
   removeOrFail,
+  stringSort,
 } from "../../server/src/common/util/langutils";
+import { invokeArrayFns } from "@vue/shared";
 
 /*
  * Typesafe Vuex Store
@@ -94,6 +96,7 @@ interface GroupColorPayload {
 const mutations: MutationTree<YsState> & Mutations = {
   [MutationTypes.GROUP_ADD](state, payload: ChannelGroup[]): void {
     copyArray(payload, state.groups);
+    state.groups.sort((a, b) => stringSort(a.groupName, b.groupName));
   },
   [MutationTypes.GROUP_DELETE](state, groupName: string): void {
     removeOrFail(state.groups, (e) => e.groupName == groupName);

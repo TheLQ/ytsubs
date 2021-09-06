@@ -1,13 +1,5 @@
 <template>
   <div class="channel-tag-wrapper">
-    <span
-      class="channel-tag"
-      v-for="group of groupsAppliedObjects"
-      :style="getGroupColorStyle(group)"
-    >
-      {{ group.groupName }}
-    </span>
-
     <form v-if="addDisplayed">
       <button
         alt="Add tag"
@@ -18,6 +10,14 @@
         <template v-if="toggleSavingCounter == 0"> {{ toggleValue }} </template>
         <template v-else>Saving... {{ toggleSavingCounter }}</template>
       </button>
+
+      <span
+        class="channel-tag"
+        v-for="group of groupsAppliedObjects"
+        :style="getGroupColorStyle(group)"
+      >
+        {{ group.groupName }}
+      </span>
 
       <div v-if="formDisplayed">
         <GroupSelector

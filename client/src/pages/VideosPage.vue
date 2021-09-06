@@ -156,7 +156,7 @@ export default defineComponent({
       groupIncludeApplied: [],
       dateFilterSelected: null,
       dateFilterApplied: null,
-      sizeSelected: 25,
+      sizeSelected: 20,
       channelUpdateUrl: "http://127.0.0.1:3001" + POST_YOUTUBE_CHANNELS_UPDATE,
       groupAddOpenDisplayed: true,
       groupAddFormDisplayedId: null,
