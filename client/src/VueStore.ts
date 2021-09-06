@@ -22,6 +22,7 @@ import {
   stringSort,
 } from "../../server/src/common/util/langutils";
 import { invokeArrayFns } from "@vue/shared";
+import { assertNotBlank } from "./utils";
 
 /*
  * Typesafe Vuex Store
@@ -48,12 +49,18 @@ export interface YsState {
   groups: ChannelGroup[];
   groupMappings: ChannelGroupMapping[];
   loadingProgress: LoadingEntry[];
-  yotubeSignedIn: boolean;
+  youtube: YoutubeState;
 }
 
 export interface LoadingEntry {
   message: string;
   done: boolean;
+}
+
+export interface YoutubeState {
+  signedIn: boolean;
+  name: string;
+  profileImage: string;
 }
 
 //
@@ -71,6 +78,7 @@ export enum MutationTypes {
   LOADING_ADD = "LOADING_ADD",
   LOADING_DONE = "LOADING_DONE",
   YOUTUBE_SIGNIN = "YOUTUBE_SIGNIN",
+  YOUTUBE_SIGNOUT = "YOUTUBE_SIGNOUT",
 }
 
 /**
@@ -84,9 +92,13 @@ type Mutations<S = YsState> = {
     state: S,
     payload: ChannelGroupMapping[]
   ): void;
-  [MutationTypes.LOADING_ADD](state: S, payload: string): void;
-  [MutationTypes.LOADING_DONE](state: S, payload: string): void;
-  [MutationTypes.YOUTUBE_SIGNIN](state: S, isSignedIn: boolean): void;
+  [MutationTypes.LOADING_ADD](state: S, message: string): void;
+  [MutationTypes.LOADING_DONE](state: S, message: string): void;
+  [MutationTypes.YOUTUBE_SIGNIN](
+    state: S,
+    payload: YoutubeState
+  ): void;
+  [MutationTypes.YOUTUBE_SIGNOUT](state: S, payload: undefined): void;
 };
 interface GroupColorPayload {
   group: string;
@@ -140,8 +152,15 @@ const mutations: MutationTree<YsState> & Mutations = {
     }
     console.log(`LOADING DONE (${numDone}/${numTotal}): ${message}`);
   },
-  [MutationTypes.YOUTUBE_SIGNIN](state, isSignedIn: boolean): void {
-    state.yotubeSignedIn = isSignedIn;
+  [MutationTypes.YOUTUBE_SIGNIN](
+    state,
+    payload: YoutubeState
+  ): void {
+    state.youtube = payload;
+  },
+  [MutationTypes.YOUTUBE_SIGNOUT](state, payload: undefined): void {
+    state.youtube.signedIn = false;
+    state.youtube.name = "";
   },
 };
 
@@ -249,7 +268,11 @@ export const store: YsStore = createStore<YsState>({
       groups: [],
       groupMappings: [],
       loadingProgress: [],
-      yotubeSignedIn: false,
+      youtube: {
+        signedIn: false,
+        name: "",
+        profileImage: "",
+      },
     };
   },
   mutations,

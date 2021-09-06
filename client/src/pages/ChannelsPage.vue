@@ -22,18 +22,6 @@
         </button>
       </fieldset>
 
-      <fieldset>
-        <legend>YouTube Controls</legend>
-        <button type="button" @click="youtubeSignInToggle">
-          <template v-if="youtubeSignedIn">Sign Out</template>
-          <template v-else>Sign In</template>
-        </button>
-
-        <button v-if="youtubeSignedIn" type="button" @click="youtubeDeleteAccount">
-          Delete Account
-        </button>
-      </fieldset>
-
       <GroupSelector
         name="Include Groups"
         :groups-applied="groupIncludeApplied"
@@ -133,12 +121,11 @@ import { findOrFail } from "../../../server/src/common/util/langutils";
 import { apiGetData, alertAndThrow, apiAction } from "../util/httputils";
 import LoadingBox from "../components/LoadingBox.vue";
 import GroupsDisplay, { MappingEvent } from "../components/GroupsDisplay.vue";
-import { MutationTypes } from "../VueStore";
+import { MutationTypes, YoutubeState } from "../VueStore";
 import GroupSelector, {
   updateGroupSelected,
 } from "../components/GroupSelector.vue";
 import { getGroupColorStyle } from "../utils";
-import { revokeAccess, toggleSignIn } from "../YoutubeManager";
 
 interface Channel extends SubscriptionStorage {
   groupsInfo: ChannelGroup[];
@@ -204,7 +191,7 @@ export default defineComponent({
       }
     },
     youtubeSignedIn(): boolean {
-      return this.$store.state.yotubeSignedIn;
+      return this.$store.state.youtube.signedIn;
     },
   },
   //
@@ -324,18 +311,6 @@ export default defineComponent({
         (e) => e.channelId == event.channelId
       );
       channel.groups = updateGroupSelected(event, channel.groups);
-    },
-    /**
-     * Yotube Controls form - Sign in/out
-     */
-    youtubeSignInToggle() {
-      toggleSignIn();
-    },
-    /**
-     * Yotube Controls form - Delete account
-     */
-    youtubeDeleteAccount() {
-      revokeAccess();
     },
   },
 });

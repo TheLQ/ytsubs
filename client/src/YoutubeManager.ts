@@ -68,7 +68,15 @@ function onSignInChange() {
   }
   const user = GoogleAuth.currentUser.get();
   const isAuthorized = user.hasGrantedScopes(SCOPE);
-  store.commit(MutationTypes.YOUTUBE_SIGNIN, isAuthorized);
+  if (isAuthorized) {
+    store.commit(MutationTypes.YOUTUBE_SIGNIN, {
+      signedIn: true,
+      name: user.getBasicProfile().getName(),
+      profileImage: user.getBasicProfile().getImageUrl(),
+    });
+  } else {
+    store.commit(MutationTypes.YOUTUBE_SIGNOUT, undefined)
+  }
 }
 
 export function toggleSignIn() {
