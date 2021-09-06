@@ -80,7 +80,7 @@ async function init() {
 
     // Handle 404 - Keep this as a last route
     app.use(function (req, res, next) {
-      setCors(res);
+      setCors(req, res);
       res.status(404);
       res.end();
     });
@@ -122,7 +122,7 @@ export function prehandle(callback: UwsCallback, context: Context) {
     //   await sleep(4000);
     // }
     try {
-      setCors(res);
+      setCors(req, res);
 
       const result = callback(req, res, context);
       if (result instanceof Promise) {
@@ -141,14 +141,25 @@ export function optionsCors(
   res: express.Response,
   context: Context
 ) {
-  setCors(res);
+  setCors(req, res);
   res.end();
 }
 
-function setCors(res: express.Response) {
-  // Allow the dev web server to connect to this backend server
-  // TODO: Set origin to be less restrictive... http://127.0.0.1:3000
-  res.setHeader("Access-Control-Allow-Origin", "https://ytsubs.xana.sh");
+/**
+ * Allow the dev web server to connect to this backend server
+ */
+function setCors(req: express.Request, res: express.Response) {
+  if (req.headers.origin) {
+    const origin = req.headers.origin;
+    if (origin.startsWith("http://127.0.0.1")) {
+      // development mode, return as is on whatever port
+      res.setHeader("Access-Control-Allow-Origin", origin);
+    } else {
+      res.setHeader("Access-Control-Allow-Origin", "https://ytsubs.xana.sh");
+    }
+  } else {
+    // TODO: Not needed?
+  }
   res.setHeader("Access-Control-Allow-Methods", "POST, DELETE, PUT");
   res.setHeader("Access-Control-Allow-Headers", "content-type");
 }

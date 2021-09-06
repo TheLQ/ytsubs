@@ -3,9 +3,9 @@ import { WrappedError } from "../../../server/src/common/util/error";
 import { removeOrFail } from "../../../server/src/common/util/langutils";
 
 const backendServer = import.meta.env.VITE_API_URL;
-console.log("backend server " + backendServer)
+console.log("backend server", backendServer);
 if (backendServer == undefined) {
-  throw new Error("init fail no backend server")
+  throw new Error("init fail no backend server");
 }
 
 /**
@@ -16,7 +16,7 @@ export async function apiSendData(
   path: string,
   reqJson: any
 ): Promise<any> {
-  console.trace(
+  console.info(
     `API SendData ${method} ${path}`,
     JSON.parse(JSON.stringify(reqJson))
   );
@@ -35,7 +35,7 @@ export async function apiSendData(
  * api call returns json on success
  */
 export async function apiGetData(method: string, path: string): Promise<any> {
-  console.trace(`API GetData ${method} ${path}`);
+  console.info(`API GetData ${method} ${path}`);
   const res = await fetch(backendServer + path, {
     method,
   });
@@ -66,7 +66,7 @@ async function readJson(res: Response) {
  * api call returns 1 on success
  */
 export async function apiAction(method: string, path: string): Promise<void> {
-  console.trace(`API Action ${method} ${path}`);
+  console.info(`API Action ${method} ${path}`);
   const res = await fetch(backendServer + path, {
     method,
   });
