@@ -17,7 +17,11 @@
 
         <hr />
 
-        <button type="button" :disabled="!youtubeSignedIn">
+        <button
+          type="button"
+          :disabled="!youtubeSignedIn"
+          @click="syncYoutubeSubscriptions"
+        >
           Sync from YouTube
         </button>
       </fieldset>
@@ -111,14 +115,16 @@ import {
 import {
   apiGroup,
   apiGroupColor,
-  GET_API_GROUP,
 } from "../../../server/src/common/routes/ApiGroupRoute";
-import {
-  GET_API_CHANNEL,
-  apiChannelGroup,
-} from "../../../server/src/common/routes/ApiChannelRoute";
+import { GET_API_CHANNEL } from "../../../server/src/common/routes/ApiChannelRoute";
+import { POST_YOUTUBE_CHANNELS } from "../../../server/src/common/routes/ApiYoutubeRoute";
 import { findOrFail } from "../../../server/src/common/util/langutils";
-import { apiGetData, alertAndThrow, apiAction } from "../util/httputils";
+import {
+  apiGetData,
+  alertAndThrow,
+  apiAction,
+  apiSendData,
+} from "../util/httputils";
 import LoadingBox from "../components/LoadingBox.vue";
 import GroupsDisplay, { MappingEvent } from "../components/GroupsDisplay.vue";
 import { MutationTypes, YoutubeState } from "../VueStore";
@@ -126,6 +132,7 @@ import GroupSelector, {
   updateGroupSelected,
 } from "../components/GroupSelector.vue";
 import { getGroupColorStyle } from "../utils";
+import { getAllChannels } from "../YoutubeManager";
 
 interface Channel extends SubscriptionStorage {
   groupsInfo: ChannelGroup[];
@@ -222,6 +229,20 @@ export default defineComponent({
       }
 
       this.$store.commit(MutationTypes.LOADING_DONE, loadingMessage);
+    },
+    async syncYoutubeSubscriptions(): Promise<void> {
+      await getAllChannels(async (page) => {
+        // send piecemeil instead of one gigantic POST for early exit error handling
+        const result = await apiSendData(
+          "POST",
+          POST_YOUTUBE_CHANNELS + "?gapi",
+          page
+        );
+        if (JSON.stringify(result) != "{}") {
+          console.log("error body ", result);
+          throw new Error("Unexpected API result");
+        }
+      });
     },
     /**
      * Group include form - on check, update UI

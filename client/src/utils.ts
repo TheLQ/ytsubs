@@ -17,15 +17,3 @@ export function getGroupColorStyle(group: ChannelGroup): string {
     return "";
   }
 }
-
-export function assertNotBlank(value: any, errorMessage: string): string {
-  if (
-    value == null ||
-    value == undefined ||
-    typeof value != "string" ||
-    value.trim() == ""
-  ) {
-    throw new Error(errorMessage + " value " + value);
-  }
-  return value;
-}

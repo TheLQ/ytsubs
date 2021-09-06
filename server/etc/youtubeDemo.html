@@ -1,0 +1,89 @@
+<button id="sign-in-or-out-button"
+        style="margin-left: 25px">init...</button>
+<button id="revoke-access-button"
+        style="display: none; margin-left: 25px">Revoke access</button>
+
+<div id="auth-status" style="display: inline; padding-left: 25px"></div>
+
+
+<script src="https://apis.google.com/js/api.js"></script>
+<script>
+  function init() {
+    console.log("init")
+    gapi.load("client:auth2", initYoutubeClient);
+  }
+  window.addEventListener("load", init);
+
+  const SCOPE = "https://www.googleapis.com/auth/youtube.readonly";
+  let GoogleAuth = null;
+
+  async function initYoutubeClient() {
+    // must not throw errors in this function because gapi doesn't log them!
+    try {
+      console.log("youtube client start");
+      await gapi.client.init({
+        // Docs use apiKey but for client js if you put one in this fails with invalid key
+        clientId: "",
+        discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest'],
+        scope: SCOPE
+      });
+      console.log("youtube client initted")
+
+      GoogleAuth = gapi.auth2.getAuthInstance();
+
+      // update ui when applying sign in/out
+      GoogleAuth.isSignedIn.listen(onSignInChange);
+
+      // update ui with current state
+      onSignInChange();
+
+      document.querySelector('#sign-in-or-out-button').addEventListener("click",function() {
+        console.log("auth click")
+        handleAuthClick();
+        console.log("auth click done")
+      });
+      document.querySelector('#revoke-access-button').addEventListener("click",function() {
+        revokeAccess();
+      });
+      console.log("youtube client setup complete")
+    } catch (error) {
+      console.error("failed to init gapi ---goo", error);
+      return;
+    }
+  }
+
+  function handleAuthClick() {
+    
+  }
+
+  function onSignInChange() {
+    const user = GoogleAuth.currentUser.get();
+    const isAuthorized = user.hasGrantedScopes(SCOPE);
+    if (isAuthorized) {
+      document.querySelector('#sign-in-or-out-button').innerHTML = 'Sign out';
+      document.querySelector('#revoke-access-button').style.display = 'inline-block';
+      document.querySelector('#auth-status').innerHTML  ='You are currently signed in and have granted access to this app.';
+
+      // Example 1: Use method-specific function
+      var request = gapi.client.youtube.subscriptions.list({'part': 'snippet', 'mine': 'true'});
+
+      // Execute the API request.
+      request.execute(function(response) {
+        console.log("channels", response);
+      });
+
+    } else {
+      document.querySelector('#sign-in-or-out-button').innerHTML = 'Sign In/Authorize';
+      document.querySelector('#revoke-access-button').style.display = 'none';
+      document.querySelector('#auth-status').innerHTML = 'You have not authorized this app or you are signed out.';
+    }
+  }
+
+  // try {
+  //     console.log("login");
+  //     await gapi.auth2.getAuthInstance().signIn({ scope: SCOPE });
+  //   } catch (error) {
+  //     console.error("failed to login", error);
+  //     return;
+  //   }
+</script>

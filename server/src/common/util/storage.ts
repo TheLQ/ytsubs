@@ -12,6 +12,10 @@ export interface SubscriptionStorageSimple {
   channelId: string;
   channelName: string;
   lastUpdated?: string;
+  thumbnailMedium?: string;
+  thumbnailDefault?: string;
+  thumbnailHigh?: string;
+  channelDescription?: string;
 }
 
 export interface SubscriptionStorage extends SubscriptionStorageSimple {

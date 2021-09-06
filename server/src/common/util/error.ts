@@ -1,6 +1,6 @@
 export function prettyError(err: any): string {
   let message: string;
-  if (err instanceof WrappedError) {
+  if (err.toString) {
     message = err.toString();
   } else if (err.stack) {
     message = err.stack as string;

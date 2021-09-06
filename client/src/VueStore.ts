@@ -20,9 +20,9 @@ import {
   findOrFail,
   removeOrFail,
   stringSort,
+  assertNotBlank,
 } from "../../server/src/common/util/langutils";
 import { invokeArrayFns } from "@vue/shared";
-import { assertNotBlank } from "./utils";
 
 /*
  * Typesafe Vuex Store
@@ -94,10 +94,7 @@ type Mutations<S = YsState> = {
   ): void;
   [MutationTypes.LOADING_ADD](state: S, message: string): void;
   [MutationTypes.LOADING_DONE](state: S, message: string): void;
-  [MutationTypes.YOUTUBE_SIGNIN](
-    state: S,
-    payload: YoutubeState
-  ): void;
+  [MutationTypes.YOUTUBE_SIGNIN](state: S, payload: YoutubeState): void;
   [MutationTypes.YOUTUBE_SIGNOUT](state: S, payload: undefined): void;
 };
 interface GroupColorPayload {
@@ -127,8 +124,9 @@ const mutations: MutationTree<YsState> & Mutations = {
     copyArray(payload, state.groupMappings);
   },
   [MutationTypes.LOADING_ADD](state, message: string): void {
-    console.log("LOADING ADD: " + message);
-    state.loadingProgress.push({
+    console.info("LOADING ADD: " + message);
+    // insert at start so (theoretically) latest long-running task is at the top
+    state.loadingProgress.splice(0, 0, {
       message,
       done: false,
     });
@@ -150,12 +148,9 @@ const mutations: MutationTree<YsState> & Mutations = {
     if (numDone == numTotal) {
       state.loadingProgress.length = 0;
     }
-    console.log(`LOADING DONE (${numDone}/${numTotal}): ${message}`);
+    console.info(`LOADING DONE (${numDone}/${numTotal}): ${message}`);
   },
-  [MutationTypes.YOUTUBE_SIGNIN](
-    state,
-    payload: YoutubeState
-  ): void {
+  [MutationTypes.YOUTUBE_SIGNIN](state, payload: YoutubeState): void {
     state.youtube = payload;
   },
   [MutationTypes.YOUTUBE_SIGNOUT](state, payload: undefined): void {

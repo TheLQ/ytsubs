@@ -128,10 +128,14 @@ export function prehandle(callback: UwsCallback, context: Context) {
       if (result instanceof Promise) {
         await result;
       }
-    } catch (err) {
+    } catch (err: any) {
       const message = error.prettyError(err);
       res.send(`<pre>${message}</pre>`);
-      log.error(err);
+      if (err.toString) {
+        log.error(message);
+      } else {
+        log.error(message, err);
+      }
     }
   };
 }

@@ -16,7 +16,7 @@ export async function apiSendData(
   path: string,
   reqJson: any
 ): Promise<any> {
-  console.info(
+  console.debug(
     `API SendData ${method} ${path}`,
     JSON.parse(JSON.stringify(reqJson))
   );
@@ -35,7 +35,7 @@ export async function apiSendData(
  * api call returns json on success
  */
 export async function apiGetData(method: string, path: string): Promise<any> {
-  console.info(`API GetData ${method} ${path}`);
+  console.debug(`API GetData ${method} ${path}`);
   const res = await fetch(backendServer + path, {
     method,
   });
@@ -66,7 +66,7 @@ async function readJson(res: Response) {
  * api call returns 1 on success
  */
 export async function apiAction(method: string, path: string): Promise<void> {
-  console.info(`API Action ${method} ${path}`);
+  console.debug(`API Action ${method} ${path}`);
   const res = await fetch(backendServer + path, {
     method,
   });

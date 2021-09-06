@@ -90,3 +90,18 @@ export function sleep(ms: number) {
     setTimeout(resolve, ms);
   });
 }
+
+export function assertNotNull(value: any, errorMessage: string): string {
+  if (value == null || value == undefined || typeof value != "string") {
+    throw new Error(errorMessage + " value " + value);
+  }
+  return value;
+}
+
+export function assertNotBlank(value: any, errorMessage: string): string {
+  const strValue = assertNotNull(value, errorMessage);
+  if (strValue.trim() == "") {
+    throw new Error(errorMessage + " value " + value);
+  }
+  return value;
+}

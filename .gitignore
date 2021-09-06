@@ -1,4 +1,5 @@
 server/node_modules/
+server/cache_gapi/
 server/cache_feed/
 server/client/
 test.js

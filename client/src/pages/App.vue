@@ -10,17 +10,19 @@
 
     <div class="user">
       <template v-if="youtube.signedIn">
-        <img :src="youtube.profileImage"/>
+        <img :src="youtube.profileImage" />
         {{ youtube.name }}
       </template>
       <template v-else>
-        <label for="signInButton">Sign in with YouTube to manage your channels</label>
+        <label for="signInButton"
+          >Sign in with YouTube to manage your channels</label
+        >
       </template>
 
       <button type="button" id="signInButton" @click="youtubeSignInToggle">
-          <template v-if="youtube.signedIn">Sign Out</template>
-          <template v-else>Sign In</template>
-        </button>
+        <template v-if="youtube.signedIn">Sign Out</template>
+        <template v-else>Sign In</template>
+      </button>
     </div>
   </header>
   <div id="content">
@@ -45,8 +47,8 @@ export default defineComponent({
   },
   computed: {
     youtube() {
-      return this.$store.state.youtube
-    }
+      return this.$store.state.youtube;
+    },
   },
   beforeCreate() {
     const store = useStore();
@@ -65,7 +67,7 @@ export default defineComponent({
     youtubeDeleteAccount() {
       revokeAccess();
     },
-  }
+  },
 });
 </script>
 

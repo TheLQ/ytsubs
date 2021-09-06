@@ -58,24 +58,21 @@ export class Storage {
         create table if not exists "subscriptions" (
             "channelId" varchar(22) not null primary key,
             "channelName" text not null,
-            "lastScanned" varchar(26)
+            "lastScanned" varchar(26),
+            thumbnailMedium  TEXT,
+            thumbnailDefault TEXT,
+            thumbnailHigh    TEXT,
+            channelDescription      TEXT
         )`);
     } catch (e) {
       throw new WrappedError("Failed to create subscriptions table", e);
     }
 
-    // try {
-    //   await db.run(`
-    //   alter table channelGroup ADD Column "color" varchar(6)
-    //   `)
-    // } catch (e) {
-    //   throw new WrappedError("Failed to alter", e);
-    // }
-
     try {
       await db.run(`
         create table if not exists "channelGroup" (
-            "groupName" text not null primary key
+            "groupName" text not null primary key,
+            "color" varchar(6)
         )`);
     } catch (e) {
       throw new WrappedError("Failed to create channelGroup table", e);
@@ -251,16 +248,29 @@ export class Storage {
       // await this.db.run("begin transaction");
       // txActive = true;
 
-      const sqlPlaceholders = subscriptions.map((entry) => "(?, ?)").join(", ");
+      let sqlPlaceholders = "(" + Array(6).fill("?").join(",") + ")";
+      sqlPlaceholders = Array(subscriptions.length)
+        .fill(sqlPlaceholders)
+        .join(",");
+
       const sqlValues = [];
       for (const subscription of subscriptions) {
         sqlValues.push(subscription.channelId);
         sqlValues.push(subscription.channelName);
+        sqlValues.push(subscription.thumbnailMedium);
+        sqlValues.push(subscription.thumbnailDefault);
+        sqlValues.push(subscription.thumbnailHigh);
+        sqlValues.push(subscription.channelDescription);
       }
       // upsert syntax
-      sql =
-        `INSERT INTO subscriptions (channelId, channelName) VALUES ${sqlPlaceholders}` +
-        "ON CONFLICT(channelId) DO UPDATE SET channelName=excluded.channelName;";
+      sql = `INSERT INTO subscriptions (channelId, channelName, thumbnailMedium, thumbnailDefault, thumbnailHigh, channelDescription) VALUES ${sqlPlaceholders}
+        ON CONFLICT(channelId) DO UPDATE SET
+        channelName=excluded.channelName,
+        thumbnailMedium = excluded.thumbnailMedium,
+        thumbnailDefault = excluded.thumbnailDefault,
+        thumbnailHigh = excluded.thumbnailHigh,
+        channelDescription = excluded.channelDescription;";
+        `;
       await this.db.run(sql, sqlValues);
 
       // await this.db.run("commit");
