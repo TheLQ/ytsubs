@@ -1,6 +1,66 @@
 <template>
   <div class="sidebar">
     <form>
+      <GroupSelector
+        name="Include Groups"
+        :groups-applied="groupIncludeApplied"
+        :add-none-all-groups="true"
+        query-parameter="groupsInclude"
+        @new-groups-applied="groupsIncludeUpdate"
+      />
+
+      <fieldset>
+        <legend>Group Manager</legend>
+        <select
+          v-model="groupEditName"
+          @change="groupEditNameApply"
+          :disabled="groupEditWorking"
+        >
+          <option>{{ groupEditAddOption }}</option>
+          <option v-for="group of groups" :style="getGroupColorStyle(group)">
+            {{ group.groupName }}
+          </option>
+        </select>
+
+        <template v-if="groupEditName == groupEditAddOption">
+          <legend>Add group</legend>
+          <input
+            type="text"
+            v-model="groupAddName"
+            :disabled="groupAddNameWorking"
+          />
+          <button
+            type="button"
+            :disabled="groupAddNameWorking"
+            @click="groupAddApply"
+          >
+            Add Group
+          </button>
+        </template>
+
+        <hr />
+
+        <label>
+          <input
+            type="color"
+            v-model="groupEditColor"
+            :disabled="groupEditEnabled"
+            @change="groupEditColorApply"
+          />
+          Color
+        </label>
+
+        <hr />
+
+        <button
+          type="button"
+          :disabled="groupEditEnabled"
+          @click="groupEditDelete"
+        >
+          Delete
+        </button>
+      </fieldset>
+
       <fieldset>
         <legend>Sync Subscriptions</legend>
         <label>
@@ -23,65 +83,6 @@
           @click="syncYoutubeSubscriptions"
         >
           Sync from YouTube
-        </button>
-      </fieldset>
-
-      <GroupSelector
-        name="Include Groups"
-        :groups-applied="groupIncludeApplied"
-        :add-none-all-groups="true"
-        query-parameter="groupsInclude"
-        @new-groups-applied="groupsIncludeUpdate"
-      />
-
-      <fieldset>
-        <legend>Add group</legend>
-        <input
-          type="text"
-          v-model="groupAddName"
-          :disabled="groupAddNameWorking"
-        />
-        <button
-          type="button"
-          :disabled="groupAddNameWorking"
-          @click="groupAddApply"
-        >
-          Add Group
-        </button>
-      </fieldset>
-
-      <fieldset>
-        <legend>Group Edit</legend>
-        <select
-          v-model="groupEditName"
-          @change="groupEditNameApply"
-          :disabled="groupEditWorking"
-        >
-          <option v-for="group of groups" :style="getGroupColorStyle(group)">
-            {{ group.groupName }}
-          </option>
-        </select>
-
-        <hr />
-
-        <label>
-          <input
-            type="color"
-            v-model="groupEditColor"
-            :disabled="groupEditEnabled"
-            @change="groupEditColorApply"
-          />
-          Color
-        </label>
-
-        <hr />
-
-        <button
-          type="button"
-          :disabled="groupEditEnabled"
-          @click="groupEditDelete"
-        >
-          Delete
         </button>
       </fieldset>
     </form>
@@ -141,6 +142,7 @@ interface Channel extends SubscriptionStorage {
 interface MyData {
   channels: Channel[];
   groupIncludeApplied: string[];
+  groupEditAddOption: string;
   groupAddName: string;
   groupAddNameWorking: boolean;
   groupEditName: string;
@@ -159,12 +161,14 @@ export default defineComponent({
   // Data
   //
   data() {
+    const groupEditAddOption = "(edit or add new)";
     return {
       channels: [],
       groupIncludeApplied: [],
+      groupEditAddOption,
       groupAddName: "",
       groupAddNameWorking: false,
-      groupEditName: "",
+      groupEditName: groupEditAddOption,
       groupEditColor: null,
       groupEditWorking: false,
     } as MyData;

@@ -10,19 +10,11 @@
       />
 
       <fieldset>
-        <legend>Upload Frequency</legend>
-        <select>
-          <option></option>
-          <option>&lt;5 past month</option>
-          <option>&lt;5 6 months</option>
-          <option>&lt;10 6 months</option>
-        </select>
-        <button type="button">Apply</button>
-      </fieldset>
-
-      <fieldset>
-        <legend>Upload Date Before</legend>
-        <input type="date" v-model="dateFilterSelected" />
+        <legend>Upload Dates</legend>
+        <label
+          >Upload Date Before
+          <input type="date" v-model="dateFilterSelected" />
+        </label>
         <button type="button" @click="dateFilterApply">Apply</button>
         <div v-if="dateFilterApplied != null">
           <ul>
@@ -34,11 +26,19 @@
             </li>
           </ul>
         </div>
-      </fieldset>
 
-      <fieldset>
-        <legend>Limit</legend>
-        <input type="number" v-model="sizeSelected" @change="sizeApply()" />
+        <hr />
+
+        <label>
+          Frequency
+          <select>
+            <option></option>
+            <option>&lt;5 past month</option>
+            <option>&lt;5 6 months</option>
+            <option>&lt;10 6 months</option>
+          </select>
+        </label>
+        <button type="button">Apply</button>
       </fieldset>
 
       <fieldset>
@@ -46,6 +46,13 @@
         <button type="button" @click="pageFirst()">First</button>
         <button type="button" alt="Previous">&lt;</button>
         <button type="button" alt="Next" @click="pageNext()">&gt;</button>
+
+        <hr />
+
+        <label>
+          Limit
+          <input type="number" v-model="sizeSelected" @change="sizeApply()" />
+        </label>
       </fieldset>
 
       <fieldset>
@@ -55,13 +62,13 @@
           Display Add Group
         </label>
       </fieldset>
-    </form>
-    <form v-bind:action="channelUpdateUrl" method="POST">
-      <div>
+
+      <fieldset>
+        <legend>YouTube</legend>
         <button type="submit" name="downloadFeeds">
           Download channel feeds
         </button>
-      </div>
+      </fieldset>
     </form>
   </div>
   <main>
