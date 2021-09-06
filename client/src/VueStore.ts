@@ -119,24 +119,26 @@ const mutations: MutationTree<YsState> & Mutations = {
     });
   },
   [MutationTypes.LOADING_DONE](state, message: string): void {
-    console.log("LOADING DONE: " + message);
     const entry = findOrFail(
       state.loadingProgress,
       (e) => e.message == message
     );
     entry.done = true;
 
-    let allDone = true;
+    let numDone = 0;
     for (const entry of state.loadingProgress) {
-      if (!entry.done) {
-        allDone = false;
-        break;
+      if (entry.done) {
+        numDone++;
       }
     }
-    if (allDone) {
-      console.log("ALL LOADING DONE");
+    const numTotal = state.loadingProgress.length;
+    if (numDone == numTotal) {
       state.loadingProgress.length = 0;
     }
+    console.log(`LOADING DONE (${numDone}/${numTotal}): ${message}`);
+  },
+  [MutationTypes.YOUTUBE_SIGNIN](state, isSignedIn: boolean): void {
+    state.yotubeSignedIn = isSignedIn;
   },
 };
 
