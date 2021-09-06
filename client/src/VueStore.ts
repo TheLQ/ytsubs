@@ -48,6 +48,7 @@ export interface YsState {
   groups: ChannelGroup[];
   groupMappings: ChannelGroupMapping[];
   loadingProgress: LoadingEntry[];
+  yotubeSignedIn: boolean;
 }
 
 export interface LoadingEntry {
@@ -69,6 +70,7 @@ export enum MutationTypes {
   GROUP_MAPPINGS_ADD = "GROUP_MAPPINGS_ADD",
   LOADING_ADD = "LOADING_ADD",
   LOADING_DONE = "LOADING_DONE",
+  YOUTUBE_SIGNIN = "YOUTUBE_SIGNIN",
 }
 
 /**
@@ -84,6 +86,7 @@ type Mutations<S = YsState> = {
   ): void;
   [MutationTypes.LOADING_ADD](state: S, payload: string): void;
   [MutationTypes.LOADING_DONE](state: S, payload: string): void;
+  [MutationTypes.YOUTUBE_SIGNIN](state: S, isSignedIn: boolean): void;
 };
 interface GroupColorPayload {
   group: string;
@@ -246,6 +249,7 @@ export const store: YsStore = createStore<YsState>({
       groups: [],
       groupMappings: [],
       loadingProgress: [],
+      yotubeSignedIn: false,
     };
   },
   mutations,

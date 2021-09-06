@@ -4,9 +4,10 @@
       <fieldset>
         <legend>Sync Subscriptions</legend>
         <label>
+          Upload
           <a
             href="https://www.youtube.com/subscription_manager?action_takeout=1"
-            >Youtube Subscription Manager</a
+            >Subscription XML</a
           >
           <input type="file" name="xml" />
           <button type="button" name="uploadSubscriptions" :disabled="true">
@@ -16,8 +17,20 @@
 
         <hr />
 
-        <button type="button" name="syncSubscriptions" :disabled="true">
-          Sync from Youtube
+        <button type="button" :disabled="!youtubeSignedIn">
+          Sync from YouTube
+        </button>
+      </fieldset>
+
+      <fieldset>
+        <legend>YouTube Controls</legend>
+        <button type="button" @click="youtubeSignInToggle">
+          <template v-if="youtubeSignedIn">Sign Out</template>
+          <template v-else>Sign In</template>
+        </button>
+
+        <button v-if="youtubeSignedIn" type="button" @click="youtubeDeleteAccount">
+          Delete Account
         </button>
       </fieldset>
 
@@ -79,13 +92,6 @@
           Delete
         </button>
       </fieldset>
-
-      <fieldset>
-        <legend>debug</legend>
-        <button type="button" name="checkYoutubeAuth" :disabled="true">
-          Check Youtube Auth
-        </button>
-      </fieldset>
     </form>
   </div>
   <main>
@@ -132,6 +138,7 @@ import GroupSelector, {
   updateGroupSelected,
 } from "../components/GroupSelector.vue";
 import { getGroupColorStyle } from "../utils";
+import { revokeAccess, toggleSignIn } from "../YoutubeManager";
 
 interface Channel extends SubscriptionStorage {
   groupsInfo: ChannelGroup[];
@@ -195,6 +202,9 @@ export default defineComponent({
           return false;
         });
       }
+    },
+    youtubeSignedIn(): boolean {
+      return this.$store.state.yotubeSignedIn;
     },
   },
   //
@@ -314,6 +324,18 @@ export default defineComponent({
         (e) => e.channelId == event.channelId
       );
       channel.groups = updateGroupSelected(event, channel.groups);
+    },
+    /**
+     * Yotube Controls form - Sign in/out
+     */
+    youtubeSignInToggle() {
+      toggleSignIn();
+    },
+    /**
+     * Yotube Controls form - Delete account
+     */
+    youtubeDeleteAccount() {
+      revokeAccess();
     },
   },
 });
